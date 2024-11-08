@@ -1,0 +1,20 @@
+name: Cloud Foundry Workflow
+on:
+  push:
+    branches:
+      - master
+jobs:
+  run-the-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get The Repo Code
+        uses: actions/checkout@v4
+
+      - name: Install The Dependcies
+        run: npm i
+
+      - name: Cachce All Dependencies
+        uses: actions/cache@v4
+
+      - name: Run The Server
+        run: npm run dev
