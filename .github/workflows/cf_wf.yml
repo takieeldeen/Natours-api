@@ -20,4 +20,4 @@ jobs:
           key: natours-dependencies-${{hashFiles('**/package-lock.json')}}
 
       - name: Run The Server
-        run: npm run dev
+        run: npm start
