@@ -8,7 +8,6 @@ const morgan_1 = __importDefault(require("morgan"));
 const routes_1 = require("./routes");
 const routes_2 = require("./routes");
 const app = (0, express_1.default)();
-const ;
 // Third Party Middlewares
 if (process.env.NODE_ENV === "development")
     app.use((0, morgan_1.default)("dev"));
