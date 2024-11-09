@@ -3,7 +3,6 @@ import morgan from "morgan";
 
 import { tourRouter } from "./routes";
 import { userRouter } from "./routes";
-
 const app = express();
 // Third Party Middlewares
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));

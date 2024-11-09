@@ -29,6 +29,9 @@ jobs:
       - name: Get The Repo Code
         uses: actions/checkout@v4
 
+      - name: Build The Server
+        run: npm run build
+
       - name: Login To Cloud Foundry
         uses: elliottpope/cloudfoundry-cli-action@v6
         with:
@@ -37,4 +40,4 @@ jobs:
           PASSWORD: ${{secrets.CF_PASSWORD}}
           ORG: dd192eb7trial
           SPACE: dev
-          COMMAND: push natours
+          COMMAND: push NatoursApp
