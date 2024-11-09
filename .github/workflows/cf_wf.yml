@@ -33,7 +33,7 @@ jobs:
         run: npm i
 
       - name: Cache All Dependencies
-        uses: actions/caches@v4
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: natours-dependencies-${{hashFiles('**/package-lock.json')}}
