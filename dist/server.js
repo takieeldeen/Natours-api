@@ -4,13 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
-console.log("server initialized");
 dotenv_1.default.config({ path: "./config.env" });
 const app_1 = __importDefault(require("./app"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const PORT = process.env.PORT || 3000;
 const DB_STRING = process.env.DATABASE.replace("<PASSWORD>", process.env.DATABASE_PASSWORD);
-console.log(`database string is ${DB_STRING}`);
 mongoose_1.default
     .connect(DB_STRING)
     .then(() => console.log("DB Connected Successfully."));

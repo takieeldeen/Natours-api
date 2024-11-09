@@ -29,6 +29,15 @@ jobs:
       - name: Get The Repo Code
         uses: actions/checkout@v4
 
+      - name: Install Dependencies
+        run: npm i
+
+      - name: Cache All Dependencies
+        uses: actions/caches@v4
+        with:
+          path: ~/.npm
+          key: natours-dependencies-${{hashFiles('**/package-lock.json')}}
+
       - name: Build The Server
         run: npm run build
 
