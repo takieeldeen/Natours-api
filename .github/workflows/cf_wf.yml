@@ -25,6 +25,10 @@ jobs:
 
   test-login:
     uses: ./.github/workflows/cloud_foundry.yml
+    with:
+      USERNAME: TAKTAK
+      PASSWORD: PAKPAK
+      API_ENDPOINT: TT
 
   deploy-the-server:
     runs-on: ubuntu-latest
