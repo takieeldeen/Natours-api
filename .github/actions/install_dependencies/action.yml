@@ -1,10 +1,15 @@
-name: Cache And Install Dependencies
+name: Install Dependencies
 description: Install Dependencies if not cached
 inputs:
   caching:
     description: Whether the dependencies are cached or not
     required: false
     default: true
+
+outpus:
+  used-cache:
+    description: Determine Whether used cache or nort
+    value: ${{steps.install.outputs.cache}}
 runs:
   using: "composite"
   steps:
@@ -17,6 +22,9 @@ runs:
         key: node-modules-${{hashFiles('**/package-lock.json')}}
 
     - name: "Install Dependencies"
+      id: install
       if: steps.cache.output.cache-hit != 'true' || inputs.caching != 'true'
-      run: npm ci
+      run: |
+        npm ci
+        echo "isCached = ${{inputs.caching}}" >> "$GITHUB_OUTPUT"
       shell: bash
