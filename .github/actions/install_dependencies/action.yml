@@ -6,7 +6,7 @@ inputs:
     required: false
     default: true
 
-outpus:
+outputs:
   used-cache:
     description: Determine Whether used cache or nort
     value: ${{steps.install.outputs.cache}}
