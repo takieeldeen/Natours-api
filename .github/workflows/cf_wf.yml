@@ -13,25 +13,18 @@ jobs:
 
       - name: Install The Dependencies
         uses: ./.github/actions/cache_dependencies
-
-      # - name: Install The Dependcies
-      #   run: npm i
-
-      # - name: Cachce All Dependencies
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.npm
-      #     key: natours-dependencies-${{hashFiles('**/package-lock.json')}}
+        with:
+          caching: "false"
 
       - name: Test The Server
         run: npm run test
 
-  test-login:
-    uses: ./.github/workflows/cloud_foundry.yml
-    secrets:
-      USERNAME: ${{secrets.CF_USERNAME}}
-      PASSWORD: ${{secrets.CF_PASSWORD}}
-      API_ENDPOINT: https://api.cf.us10-001.hana.ondemand.com/
+  # test-login:
+  #   uses: ./.github/workflows/cloud_foundry.yml
+  #   secrets:
+  #     USERNAME: ${{secrets.CF_USERNAME}}
+  #     PASSWORD: ${{secrets.CF_PASSWORD}}
+  #     API_ENDPOINT: https://api.cf.us10-001.hana.ondemand.com/
 
   deploy-the-server:
     runs-on: ubuntu-latest
@@ -40,14 +33,10 @@ jobs:
       - name: Get The Repo Code
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        run: npm i
-
-      - name: Cache All Dependencies
-        uses: actions/cache@v4
+      - name: Install The Dependencies
+        uses: ./.github/actions/cache_dependencies
         with:
-          path: ~/.npm
-          key: natours-dependencies-${{hashFiles('**/package-lock.json')}}
+          caching: "false"
 
       - name: Build The Server
         run: npm run build

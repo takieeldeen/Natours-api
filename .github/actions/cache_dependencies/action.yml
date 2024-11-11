@@ -1,15 +1,22 @@
 name: Cache And Install Dependencies
 description: Install Dependencies if not cached
+inputs:
+  caching:
+    description: Whether the dependencies are cached or not
+    required: false
+    default: true
 runs:
   using: "composite"
   steps:
     - name: "Cache dependencies"
       id: cache
       uses: actions/cache@v3
+      if: inputs.caching == 'true'
       with:
         path: node_modules
         key: node-modules-${{hashFiles('**/package-lock.json')}}
+
     - name: "Install Dependencies"
-      if: steps.cache.output.cache-hit != 'true'
+      if: steps.cache.output.cache-hit != 'true' || inputs.caching != 'true'
       run: npm ci
       shell: bash
