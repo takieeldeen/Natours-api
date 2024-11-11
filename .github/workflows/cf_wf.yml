@@ -25,10 +25,10 @@ jobs:
 
   test-login:
     uses: ./.github/workflows/cloud_foundry.yml
-    with:
-      USERNAME: TAKTAK
-      PASSWORD: PAKPAK
-      API_ENDPOINT: TT
+    secrets:
+      USERNAME: ${{secrets.CF_USERNAME}}
+      PASSWORD: ${{secrets.CF_PASSWORD}}
+      API_ENDPOINT: https://api.cf.us10-001.hana.ondemand.com/
 
   deploy-the-server:
     runs-on: ubuntu-latest

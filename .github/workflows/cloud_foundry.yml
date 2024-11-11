@@ -1,19 +1,16 @@
 name: Deploy to Cloud Foundry
 on:
   workflow_call:
-    inputs:
+    secrets:
       USERNAME:
         description: Your Cloud Foundry Username
         required: true
-        type: string
       PASSWORD:
         description: Your Cloud Foundry Password
         required: true
-        type: string
       API_ENDPOINT:
         description: Your Cloud Foundry API Endpoint
         required: true
-        type: string
 jobs:
   deploying-to-cloud-foundry:
     runs-on: ubuntu-latest
@@ -29,4 +26,4 @@ jobs:
           sudo apt-get install cf8-cli
 
       - name: Login to your cloud foundry space
-        run: cf login -a ${{inputs.API_ENDPOINT}} -u ${{inputs.USERNAME}} -p ${{inputs.PASSWORD}}
+        run: cf login -a ${{secrets.API_ENDPOINT}} -u ${{secrets.USERNAME}} -p ${{secrets.PASSWORD}}
