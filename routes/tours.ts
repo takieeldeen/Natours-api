@@ -1,24 +1,25 @@
-import express from 'express';
-import { tourController } from '../controllers/tours';
+import express from "express";
+import { tourController } from "../controllers/tours";
 
 const tourRouter = express.Router();
 // Param Middleware that runs only when id param exists
 // tourRouter.param('id', tourController.checkTourId);
 
-tourRouter.route('/stats').get(tourController.getTourStats);
+tourRouter.route("/stats").get(tourController.getTourStats);
+tourRouter.route("/monthlyPlans/:year").get(tourController.getMonthlyPlan);
 
 tourRouter
-  .route('/top-5-cheap')
+  .route("/top-5-cheap")
   .get(tourController.topCheap, tourController.getAllTours);
 
 tourRouter
-  .route('/')
+  .route("/")
   .get(tourController.getAllTours)
   .post(tourController.createTour);
 // .post(tourController.checkTourBody, tourController.createTour);
 
 tourRouter
-  .route('/:id')
+  .route("/:id")
   .get(tourController.getTour)
   .patch(tourController.updateTour)
   .delete(tourController.deleteTour);

@@ -39,6 +39,7 @@ exports.createTour = createTour;
 exports.updateTour = updateTour;
 exports.deleteTour = deleteTour;
 exports.getTourStats = getTourStats;
+exports.getMonthlyPlan = getMonthlyPlan;
 const tourModel_1 = __importStar(require("../../models/tourModel"));
 const QueryAPI_1 = require("../../utils/QueryAPI");
 // Old method
@@ -71,9 +72,9 @@ const QueryAPI_1 = require("../../utils/QueryAPI");
 //   }
 // }
 function topCheap(req, res, next) {
-    req.query.sort = '-ratingsAverage,price';
-    req.query.limit = '5';
-    req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+    req.query.sort = "-ratingsAverage,price";
+    req.query.limit = "5";
+    req.query.fields = "name,price,ratingsAverage,summary,difficulty";
     next();
 }
 // OOP Method
@@ -93,7 +94,7 @@ function getAllTours(req, res) {
             const tours = yield toursQuery;
             // return the results
             res.status(200).json({
-                status: 'success',
+                status: "success",
                 results: tours.length,
                 data: {
                     tours,
@@ -102,7 +103,7 @@ function getAllTours(req, res) {
         }
         catch (err) {
             res.status(404).json({
-                status: 'fail',
+                status: "fail",
                 message: (_a = err === null || err === void 0 ? void 0 : err.errorResponse) === null || _a === void 0 ? void 0 : _a.errmsg,
             });
         }
@@ -115,13 +116,13 @@ function getTour(req, res) {
             const tourId = req.params.id;
             const tour = yield tourModel_1.default.findById(tourId);
             res.status(200).json({
-                status: 'success',
+                status: "success",
                 tour,
             });
         }
         catch (err) {
             res.status(404).json({
-                status: 'fail',
+                status: "fail",
                 message: (_a = err === null || err === void 0 ? void 0 : err.errorResponse) === null || _a === void 0 ? void 0 : _a.errmsg,
             });
         }
@@ -133,13 +134,13 @@ function createTour(req, res) {
             const tourData = req.body;
             const newTour = yield tourModel_1.default.create(tourData);
             res.status(201).json({
-                status: 'success',
+                status: "success",
                 tour: newTour,
             });
         }
         catch (err) {
             res.status(400).json({
-                status: 'fail',
+                status: "fail",
                 message: err.errorResponse.errmsg,
             });
         }
@@ -155,13 +156,13 @@ function updateTour(req, res) {
                 runValidators: true,
             });
             res.status(200).json({
-                status: 'success',
+                status: "success",
                 tour: newTour,
             });
         }
         catch (err) {
             res.status(400).json({
-                status: 'fail',
+                status: "fail",
                 message: (_b = (_a = err === null || err === void 0 ? void 0 : err.errorResponse) === null || _a === void 0 ? void 0 : _a.errmsg) !== null && _b !== void 0 ? _b : err,
             });
         }
@@ -174,12 +175,12 @@ function deleteTour(req, res) {
             const tourId = req.params.id;
             yield tourModel_1.default.findByIdAndDelete(tourId);
             res.status(204).json({
-                status: 'success',
+                status: "success",
             });
         }
         catch (err) {
             res.status(404).json({
-                status: 'fail',
+                status: "fail",
                 message: (_b = (_a = err === null || err === void 0 ? void 0 : err.errorResponse) === null || _a === void 0 ? void 0 : _a.errmsg) !== null && _b !== void 0 ? _b : err,
             });
         }
@@ -191,17 +192,84 @@ function getTourStats(req, res) {
             const stats = yield tourModel_1.default.aggregate([
                 {
                     $match: { ratingsAverage: { $gte: 4.5 } },
-                    $group: { _id: null, tourCounts: { $sum: 1 } },
+                },
+                {
+                    $group: {
+                        _id: { $toUpper: "$difficulty" },
+                        totalTours: { $sum: 1 },
+                        numberOfTours: { $count: {} },
+                        averageRating: { $avg: "$ratingsAverage" },
+                        minPrice: { $min: "$price" },
+                        maxPrice: { $max: "$price" },
+                        numRatings: { $sum: "$ratingsQuantity" },
+                        toursNames: { $addToSet: "$name" },
+                    },
+                },
+                {
+                    $sort: { totalTours: -1, maxPrice: 1 },
                 },
             ]);
             res.status(200).json({
-                status: 'success',
+                status: "success",
                 stats,
             });
         }
         catch (err) {
             res.status(500).json({
-                status: 'fail',
+                status: "fail",
+                message: err.message,
+            });
+        }
+    });
+}
+function getMonthlyPlan(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { year } = req.params;
+            const monthlyPlans = yield tourModel_1.default.aggregate([
+                {
+                    $unwind: "$startDates",
+                },
+                {
+                    $match: {
+                        startDates: {
+                            $gte: new Date(`${year}-01-01`),
+                            $lte: new Date(`${year}-12-31`),
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        name: 1,
+                        month: { $dateToString: { date: "$startDates", format: "%B" } },
+                    },
+                },
+                {
+                    $group: {
+                        _id: "$month",
+                        tourCounts: { $sum: 1 },
+                        tourNames: { $addToSet: "$name" },
+                    },
+                },
+                {
+                    $addFields: { month: "$_id" },
+                },
+                {
+                    $project: { month: 1, tourCounts: 1, tourNames: 1, _id: 0 },
+                },
+                {
+                    $sort: { tourCounts: -1 },
+                },
+            ]);
+            res.status(200).json({
+                status: "success",
+                results: monthlyPlans === null || monthlyPlans === void 0 ? void 0 : monthlyPlans.length,
+                plans: monthlyPlans,
+            });
+        }
+        catch (err) {
+            res.status(500).json({
+                status: "fail",
                 message: err.message,
             });
         }
