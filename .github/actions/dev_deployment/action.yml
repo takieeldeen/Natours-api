@@ -16,6 +16,10 @@ inputs:
 steps:
   using: "composite"
   steps:
+    - name: Test Log
+      shell: bash
+      run: echo inputs.CF_API_ENDPOINT
+  
     - name: Install Cloud Foundry
       shell: bash
       run: |
