@@ -1,5 +1,5 @@
 name: Deploy to Development Cloud Foundry
-secrets:
+inputs:
   CF_USERNAME:
     description: Cloud Foundry Username
     required: true
