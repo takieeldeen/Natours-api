@@ -13,17 +13,15 @@ secrets:
     required: true
 
 steps:
-  using: 'composite'
+  using: "composite"
   steps:
-    -name: Install Cloud Foundry
-     shell: bash
-     run: |
-      wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo gpg --dearmor -o /usr/share/keyrings/cli.cloudfoundry.org.gpg
-      echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
-      sudo apt-get update
-      sudo apt-get install cf8-cli
+    - name: Install Cloud Foundry
+      shell: bash
+      run: |
+        wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo gpg --dearmor -o /usr/share/keyrings/cli.cloudfoundry.org.gpg
+        echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+        sudo apt-get update
+        sudo apt-get install cf8-cli
 
-    -name: Login to Cloud Foundry
-     run: cf login -a ${{secrets.CF_USERNAME}} -u ${{secrets.CF_USERNAME}} -p ${{secrets.CF_PASSWORD}}
-
-    
+    - name: Login to Cloud Foundry
+      run: cf login -a ${{secrets.CF_USERNAME}} -u ${{secrets.CF_USERNAME}} -p ${{secrets.CF_PASSWORD}}
