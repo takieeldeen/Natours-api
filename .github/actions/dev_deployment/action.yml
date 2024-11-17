@@ -1,4 +1,5 @@
 name: Deploy to Development Cloud Foundry
+description: Action Used to Deploy to Cloud Founrdy Development Space
 inputs:
   CF_USERNAME:
     description: Cloud Foundry Username
@@ -24,4 +25,4 @@ steps:
         sudo apt-get install cf8-cli
 
     - name: Login to Cloud Foundry
-      run: cf login -a inputs.CF_API_ENDPOINT -u inputs.CF_USERNAME -p inputs.CF_PASSWORD
+      run: cf login -a "${{ inputs.CF_API_ENDPOINT }}" -u "${{ inputs.CF_USERNAME }}" -p "${{ inputs.CF_PASSWORD }}"
