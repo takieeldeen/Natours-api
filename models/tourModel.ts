@@ -5,8 +5,12 @@ export const tourSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      unique: [true, "A tour must have a unique name"],
       required: [true, "A tour must have a name"],
+      unique: true,
+      trim: true,
+      maxlength: [40, "A tour name must have less or equal then 40 characters"],
+      minlength: [10, "A tour name must have more or equal then 10 characters"],
+      // validate: [validator.isAlpha, 'Tour name must only contain characters']
     },
     slug: String,
     duration: {
@@ -20,11 +24,16 @@ export const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, "A tour must have a difficulty"],
-      enum: ["easy", "medium", "difficult"],
+      enum: {
+        values: ["easy", "medium", "difficult"],
+        message: "Difficulty is either: easy, medium, difficult",
+      },
     },
     ratingsAverage: {
       type: Number,
       default: 4.5,
+      min: [1, "Rating must be above 1.0"],
+      max: [5, "Rating must be below 5.0"],
     },
     ratingsQuantity: {
       type: Number,
@@ -36,7 +45,13 @@ export const tourSchema = new mongoose.Schema(
     },
     priceDiscount: {
       type: Number,
-      default: 0,
+      validate: {
+        validator: function (val) {
+          // this only points to current doc on NEW document creation
+          return val < this.price;
+        },
+        message: "Discount price ({VALUE}) should be below regular price",
+      },
     },
     summary: {
       type: String,
@@ -54,17 +69,20 @@ export const tourSchema = new mongoose.Schema(
     images: [String],
     createdAt: {
       type: Date,
-      default: new Date(),
+      default: Date.now(),
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
-
 export type TourType = {
   name: string;
   slug: string;
@@ -83,21 +101,18 @@ export type TourType = {
   startDates: Date[];
 };
 
-const Tour = mongoose.model("Tour", tourSchema);
-
 tourSchema.virtual("weekDuration").get(function () {
   return (this.duration / 7).toFixed(1);
 });
 
 // Documents Middleware
-tourSchema.pre("validate", function () {
-  console.log(this);
-  this.slug = slugify(this.name, { lower: true });
-  console.log(this);
+tourSchema.pre("save", async function () {
+  const slug = slugify(this.name, { lower: true });
+  this.set({ slug });
 });
 
 tourSchema.post("save", (doc, next) => {
-  console.log(doc);
+  console.log("fired the post save hook");
   next();
 });
 
@@ -105,4 +120,5 @@ tourSchema.post("deleteOne", (doc) => {
   console.log("Doc was deleted Successfully" + " " + doc._id);
 });
 
+const Tour = mongoose.model("Tour", tourSchema);
 export default Tour;

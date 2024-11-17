@@ -1,0 +1,29 @@
+name: Deploy to Development Cloud Foundry
+secrets:
+  CF_USERNAME:
+    description: Cloud Foundry Username
+    required: true
+
+  CF_PASSWORD:
+    description: Cloud Foundry Password
+    required: true
+
+  CF_API_ENDPOINT:
+    description: Cloud Foundry API Endpoint
+    required: true
+
+steps:
+  using: 'composite'
+  steps:
+    -name: Install Cloud Foundry
+     shell: bash
+     run: |
+      wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo gpg --dearmor -o /usr/share/keyrings/cli.cloudfoundry.org.gpg
+      echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+      sudo apt-get update
+      sudo apt-get install cf8-cli
+
+    -name: Login to Cloud Foundry
+     run: cf login -a ${{secrets.CF_USERNAME}} -u ${{secrets.CF_USERNAME}} -p ${{secrets.CF_PASSWORD}}
+
+    

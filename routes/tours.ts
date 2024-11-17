@@ -1,6 +1,6 @@
 import express from "express";
-import { tourController } from "../controllers/tours";
-
+import * as tourController from "../controllers/tours/tourController";
+console.log("object");
 const tourRouter = express.Router();
 // Param Middleware that runs only when id param exists
 // tourRouter.param('id', tourController.checkTourId);

@@ -18,11 +18,11 @@ class QueryAPI {
                 delete filters[key];
             //2.  Advanced Filtering ///////////////////////
             //Considering gt,gte,lt,lte,ne
-            if (typeof filters[key] === 'object') {
+            if (typeof filters[key] === "object") {
                 let operatorName = Object.keys(filters[key])[0];
                 // check if the operator is a regular expression operator
-                const operatorValue = operatorName === 'regex'
-                    ? new RegExp(filters[key][operatorName], 'i')
+                const operatorValue = operatorName === "regex"
+                    ? new RegExp(filters[key][operatorName], "i")
                     : filters[key][operatorName];
                 delete filters[key][operatorName];
                 operatorName = `$${operatorName}`;
@@ -36,10 +36,10 @@ class QueryAPI {
     sort() {
         const sortCriteria = this.queryStrings.sort;
         if (sortCriteria) {
-            this.query = this.query.sort(sortCriteria.replace(',', ' '));
+            this.query = this.query.sort(sortCriteria.replace(",", " "));
         }
         else {
-            this.query = this.query.sort('-createdAt');
+            this.query = this.query.sort("-createdAt");
         }
         return this;
     }
@@ -48,7 +48,7 @@ class QueryAPI {
         const page = this.queryStrings.page ? +this.queryStrings.page : 1;
         const limit = this.queryStrings.limit
             ? +this.queryStrings.limit
-            : 5;
+            : 9;
         const skippedDocsCount = limit * (page - 1);
         // Skip the first number of page (Zero based) fields and then limit the number of rows
         this.query = this.query.skip(skippedDocsCount).limit(limit);
@@ -57,10 +57,10 @@ class QueryAPI {
     select() {
         const selectedFields = this.queryStrings.fields;
         if (selectedFields) {
-            this.query = this.query.select(selectedFields.split(',').join(' '));
+            this.query = this.query.select(selectedFields.split(",").join(" "));
         }
         else {
-            this.query = this.query.select('-__v');
+            this.query = this.query.select("-__v");
         }
         return this;
     }
