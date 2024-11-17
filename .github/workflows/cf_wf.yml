@@ -41,9 +41,9 @@ jobs:
       - name: Deploy To Cloud Foundry Dev Deployment
         uses: "./.github/actions/dev_deployment"
         with:
-          CF_USERNAME: ${{secrets.CF_USERNAME}}
-          CF_PASSWORD: ${{secrets.CF_PASSWORD}}
           CF_API_ENDPOINT: https://api.cf.us10-001.hana.ondemand.com/
+          CF_PASSWORD: ${{secrets.CF_PASSWORD}}
+          CF_USERNAME: ${{secrets.CF_USERNAME}}
 
       # - name: Login To Cloud Foundry
       #   uses: elliottpope/cloudfoundry-cli-action@v6
