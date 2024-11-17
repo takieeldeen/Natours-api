@@ -24,4 +24,4 @@ steps:
         sudo apt-get install cf8-cli
 
     - name: Login to Cloud Foundry
-      run: cf login -a ${{inputs.CF_USERNAME}} -u ${{inputs.CF_USERNAME}} -p ${{inputs.CF_PASSWORD}}
+      run: cf login -a inputs.CF_API_ENDPOINT -u inputs.CF_USERNAME -p inputs.CF_PASSWORD
