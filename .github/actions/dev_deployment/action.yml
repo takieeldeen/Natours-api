@@ -1,5 +1,5 @@
 name: Deploy to Development Cloud Foundry
-description: Action Used to Deploy to Cloud Founrdy Development Space
+description: Action Used to Deploy to Cloud Foundry Development Space
 inputs:
   CF_USERNAME:
     description: Cloud Foundry Username
@@ -13,13 +13,13 @@ inputs:
     description: Cloud Foundry API Endpoint
     required: true
 
-steps:
+runs:
   using: "composite"
   steps:
     - name: Test Log
       shell: bash
-      run: echo inputs
-  
+      run: echo "${{ inputs.CF_API_ENDPOINT }}"
+
     - name: Install Cloud Foundry
       shell: bash
       run: |
@@ -29,6 +29,7 @@ steps:
         sudo apt-get install cf8-cli
 
     - name: Login to Cloud Foundry
+      shell: bash
       env:
         CF_API_ENDPOINT: ${{ inputs.CF_API_ENDPOINT }}
         CF_USERNAME: ${{ inputs.CF_USERNAME }}

@@ -44,13 +44,12 @@ jobs:
           CF_API_ENDPOINT: https://api.cf.us10-001.hana.ondemand.com/
           CF_PASSWORD: ${{secrets.CF_PASSWORD}}
           CF_USERNAME: ${{secrets.CF_USERNAME}}
-
-      # - name: Login To Cloud Foundry
-      #   uses: elliottpope/cloudfoundry-cli-action@v6
-      #   with:
-      #     CF_API: https://api.cf.us10-001.hana.ondemand.com/
-      #     USERNAME: ${{secrets.CF_USERNAME}}
-      #     PASSWORD: ${{secrets.CF_PASSWORD}}
-      #     ORG: dd192eb7trial
-      #     SPACE: dev
-      #     COMMAND: push NatoursApp
+# - name: Login To Cloud Foundry
+#   uses: elliottpope/cloudfoundry-cli-action@v6
+#   with:
+#     CF_API: https://api.cf.us10-001.hana.ondemand.com/
+#     USERNAME: ${{secrets.CF_USERNAME}}
+#     PASSWORD: ${{secrets.CF_PASSWORD}}
+#     ORG: dd192eb7trial
+#     SPACE: dev
+#     COMMAND: push NatoursApp
