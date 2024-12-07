@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.tourSchema = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const slugify_1 = __importDefault(require("slugify"));
+// import validator from "validator";
 exports.tourSchema = new mongoose_1.default.Schema({
     name: {
         type: String,
@@ -23,7 +24,10 @@ exports.tourSchema = new mongoose_1.default.Schema({
         trim: true,
         maxlength: [40, "A tour name must have less or equal then 40 characters"],
         minlength: [10, "A tour name must have more or equal then 10 characters"],
-        // validate: [validator.isAlpha, 'Tour name must only contain characters']
+        // validate: [
+        //   validator.isAlpha,
+        //   "Name must only contain alphabetic letters",
+        // ],
     },
     slug: String,
     duration: {
@@ -59,11 +63,10 @@ exports.tourSchema = new mongoose_1.default.Schema({
     priceDiscount: {
         type: Number,
         validate: {
-            validator: function (val) {
-                // this only points to current doc on NEW document creation
-                return val < this.price;
+            validator: function validate(val) {
+                return this.price > val;
             },
-            message: "Discount price ({VALUE}) should be below regular price",
+            message: "Price Discount ({VALUE}) can't be larger the original price",
         },
     },
     summary: {

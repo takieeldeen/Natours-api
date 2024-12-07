@@ -31,17 +31,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getMonthlyPlan = exports.getTourStats = exports.deleteTour = exports.updateTour = exports.createTour = exports.getTour = exports.getAllTours = void 0;
 exports.topCheap = topCheap;
-exports.getAllTours = getAllTours;
-exports.getTour = getTour;
-exports.createTour = createTour;
-exports.updateTour = updateTour;
-exports.deleteTour = deleteTour;
-exports.getTourStats = getTourStats;
-exports.getMonthlyPlan = getMonthlyPlan;
 const tourModel_1 = __importStar(require("../../models/tourModel"));
 const QueryAPI_1 = require("../../utils/QueryAPI");
+const catchAsync_1 = require("../../utils/catchAsync");
+const AppError_1 = __importDefault(require("../../utils/AppError"));
 // Old method
 // export async function getAllTours(req: Request, res: Response) {
 //   try {
@@ -78,201 +77,147 @@ function topCheap(req, res, next) {
     next();
 }
 // OOP Method
-function getAllTours(req, res) {
+exports.getAllTours = (0, catchAsync_1.catchAsync)(function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        var _a;
-        try {
-            // Extracting all query (filters,sort,projection,...)
-            const queryStrings = req.query;
-            // Filtering the filter props only by Including only the schema props
-            const queryObj = Object.assign({}, queryStrings);
-            const toursQuery = new QueryAPI_1.QueryAPI(queryObj, tourModel_1.tourSchema, tourModel_1.default)
-                .filter()
-                .sort()
-                .select()
-                .paginate().query;
-            const tours = yield toursQuery;
-            // return the results
-            res.status(200).json({
-                status: "success",
-                results: tours.length,
-                data: {
-                    tours,
+        // Extracting all query (filters,sort,projection,...)
+        const queryStrings = req.query;
+        // Filtering the filter props only by Including only the schema props
+        const queryObj = Object.assign({}, queryStrings);
+        const toursQuery = new QueryAPI_1.QueryAPI(queryObj, tourModel_1.tourSchema, tourModel_1.default)
+            .filter()
+            .sort()
+            .select()
+            .paginate().query;
+        const tours = yield toursQuery;
+        // return the results
+        res.status(200).json({
+            status: "success",
+            results: tours.length,
+            data: {
+                tours,
+            },
+        });
+    });
+});
+exports.getTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const tourId = req.params.id;
+        const tour = yield tourModel_1.default.findById(tourId);
+        if (!tour)
+            return next(new AppError_1.default("Can't find the requested tour", 404));
+        res.status(200).json({
+            status: "success",
+            tour,
+        });
+    });
+});
+exports.createTour = (0, catchAsync_1.catchAsync)(function (req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const tourData = req.body;
+        const newTour = yield tourModel_1.default.create(tourData);
+        res.status(201).json({
+            status: "success",
+            tour: newTour,
+        });
+    });
+});
+exports.updateTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const tourId = req.params.id;
+        const newTour = yield tourModel_1.default.findByIdAndUpdate(tourId, req.body, {
+            new: true,
+            runValidators: true,
+        });
+        if (!newTour)
+            return next(new AppError_1.default("Can't find the requested tour", 404));
+        res.status(200).json({
+            status: "success",
+            tour: newTour,
+        });
+    });
+});
+exports.deleteTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const tourId = req.params.id;
+        const tour = yield tourModel_1.default.findByIdAndDelete(tourId);
+        if (!tour)
+            return next(new AppError_1.default("Can't find the requested tour", 404));
+        res.status(204).json({
+            status: "success",
+        });
+    });
+});
+exports.getTourStats = (0, catchAsync_1.catchAsync)(function (req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const stats = yield tourModel_1.default.aggregate([
+            {
+                $match: { ratingsAverage: { $gte: 4.5 } },
+            },
+            {
+                $group: {
+                    _id: { $toUpper: "$difficulty" },
+                    totalTours: { $sum: 1 },
+                    numberOfTours: { $count: {} },
+                    averageRating: { $avg: "$ratingsAverage" },
+                    minPrice: { $min: "$price" },
+                    maxPrice: { $max: "$price" },
+                    numRatings: { $sum: "$ratingsQuantity" },
+                    toursNames: { $addToSet: "$name" },
                 },
-            });
-        }
-        catch (err) {
-            res.status(404).json({
-                status: "fail",
-                message: (_a = err === null || err === void 0 ? void 0 : err.errorResponse) === null || _a === void 0 ? void 0 : _a.errmsg,
-            });
-        }
+            },
+            {
+                $sort: { totalTours: -1, maxPrice: 1 },
+            },
+        ]);
+        res.status(200).json({
+            status: "success",
+            stats,
+        });
     });
-}
-function getTour(req, res) {
+});
+exports.getMonthlyPlan = (0, catchAsync_1.catchAsync)(function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        var _a;
-        try {
-            const tourId = req.params.id;
-            const tour = yield tourModel_1.default.findById(tourId);
-            res.status(200).json({
-                status: "success",
-                tour,
-            });
-        }
-        catch (err) {
-            res.status(404).json({
-                status: "fail",
-                message: (_a = err === null || err === void 0 ? void 0 : err.errorResponse) === null || _a === void 0 ? void 0 : _a.errmsg,
-            });
-        }
-    });
-}
-function createTour(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const tourData = req.body;
-            const newTour = yield tourModel_1.default.create(tourData);
-            res.status(201).json({
-                status: "success",
-                tour: newTour,
-            });
-        }
-        catch (err) {
-            res.status(400).json({
-                status: "fail",
-                message: err.errorResponse.errmsg,
-            });
-        }
-    });
-}
-function updateTour(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
-        try {
-            const tourId = req.params.id;
-            const newTour = yield tourModel_1.default.findByIdAndUpdate(tourId, req.body, {
-                new: true,
-                runValidators: true,
-            });
-            res.status(200).json({
-                status: "success",
-                tour: newTour,
-            });
-        }
-        catch (err) {
-            res.status(400).json({
-                status: "fail",
-                message: (_b = (_a = err === null || err === void 0 ? void 0 : err.errorResponse) === null || _a === void 0 ? void 0 : _a.errmsg) !== null && _b !== void 0 ? _b : err,
-            });
-        }
-    });
-}
-function deleteTour(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
-        try {
-            const tourId = req.params.id;
-            yield tourModel_1.default.findByIdAndDelete(tourId);
-            res.status(204).json({
-                status: "success",
-            });
-        }
-        catch (err) {
-            res.status(404).json({
-                status: "fail",
-                message: (_b = (_a = err === null || err === void 0 ? void 0 : err.errorResponse) === null || _a === void 0 ? void 0 : _a.errmsg) !== null && _b !== void 0 ? _b : err,
-            });
-        }
-    });
-}
-function getTourStats(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const stats = yield tourModel_1.default.aggregate([
-                {
-                    $match: { ratingsAverage: { $gte: 4.5 } },
-                },
-                {
-                    $group: {
-                        _id: { $toUpper: "$difficulty" },
-                        totalTours: { $sum: 1 },
-                        numberOfTours: { $count: {} },
-                        averageRating: { $avg: "$ratingsAverage" },
-                        minPrice: { $min: "$price" },
-                        maxPrice: { $max: "$price" },
-                        numRatings: { $sum: "$ratingsQuantity" },
-                        toursNames: { $addToSet: "$name" },
+        const { year } = req.params;
+        const monthlyPlans = yield tourModel_1.default.aggregate([
+            {
+                $unwind: "$startDates",
+            },
+            {
+                $match: {
+                    startDates: {
+                        $gte: new Date(`${year}-01-01`),
+                        $lte: new Date(`${year}-12-31`),
                     },
                 },
-                {
-                    $sort: { totalTours: -1, maxPrice: 1 },
+            },
+            {
+                $project: {
+                    name: 1,
+                    month: { $dateToString: { date: "$startDates", format: "%B" } },
                 },
-            ]);
-            res.status(200).json({
-                status: "success",
-                stats,
-            });
-        }
-        catch (err) {
-            res.status(500).json({
-                status: "fail",
-                message: err.message,
-            });
-        }
+            },
+            {
+                $group: {
+                    _id: "$month",
+                    tourCounts: { $sum: 1 },
+                    tourNames: { $addToSet: "$name" },
+                },
+            },
+            {
+                $addFields: { month: "$_id" },
+            },
+            {
+                $project: { month: 1, tourCounts: 1, tourNames: 1, _id: 0 },
+            },
+            {
+                $sort: { tourCounts: -1 },
+            },
+        ]);
+        res.status(200).json({
+            status: "success",
+            results: monthlyPlans === null || monthlyPlans === void 0 ? void 0 : monthlyPlans.length,
+            plans: monthlyPlans,
+        });
     });
-}
-function getMonthlyPlan(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const { year } = req.params;
-            const monthlyPlans = yield tourModel_1.default.aggregate([
-                {
-                    $unwind: "$startDates",
-                },
-                {
-                    $match: {
-                        startDates: {
-                            $gte: new Date(`${year}-01-01`),
-                            $lte: new Date(`${year}-12-31`),
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        name: 1,
-                        month: { $dateToString: { date: "$startDates", format: "%B" } },
-                    },
-                },
-                {
-                    $group: {
-                        _id: "$month",
-                        tourCounts: { $sum: 1 },
-                        tourNames: { $addToSet: "$name" },
-                    },
-                },
-                {
-                    $addFields: { month: "$_id" },
-                },
-                {
-                    $project: { month: 1, tourCounts: 1, tourNames: 1, _id: 0 },
-                },
-                {
-                    $sort: { tourCounts: -1 },
-                },
-            ]);
-            res.status(200).json({
-                status: "success",
-                results: monthlyPlans === null || monthlyPlans === void 0 ? void 0 : monthlyPlans.length,
-                plans: monthlyPlans,
-            });
-        }
-        catch (err) {
-            res.status(500).json({
-                status: "fail",
-                message: err.message,
-            });
-        }
-    });
-}
+});
 //# sourceMappingURL=tourController.js.map
