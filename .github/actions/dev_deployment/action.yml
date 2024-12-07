@@ -36,3 +36,7 @@ runs:
         CF_PASSWORD: ${{ inputs.CF_PASSWORD }}
       run: |
         cf login -a "$CF_API_ENDPOINT" -u "$CF_USERNAME" -p "$CF_PASSWORD"
+
+    - name: Deploy to cloud foundry
+      shell: bash
+      run: cf push
