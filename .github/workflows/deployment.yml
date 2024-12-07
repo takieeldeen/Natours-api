@@ -1,8 +1,8 @@
 name: Deploy to Dev Space
 on:
-  # push:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - master
   workflow_dispatch:
 jobs:
   test-the-server:
