@@ -35,7 +35,7 @@ runs:
         CF_USERNAME: ${{ inputs.CF_USERNAME }}
         CF_PASSWORD: ${{ inputs.CF_PASSWORD }}
       run: |
-        cf login -a "$CF_API_ENDPOINT" -u "$CF_USERNAME" -p "$CF_PASSWORD" -o dd192eb7trial -s dev
+        cf login -a "$CF_API_ENDPOINT" -u "$CF_USERNAME" -p "$CF_PASSWORD" -o dd192eb7trial -s qa
 
     - name: Deploy to cloud foundry
       shell: bash
