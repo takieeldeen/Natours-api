@@ -1,9 +1,27 @@
 import { Request, Response, NextFunction } from "express";
 import AppError from "../utils/AppError";
+import { MongoServerError } from "mongodb";
+import { Error } from "mongoose";
 
-const handleDatabaseCastError = (error: AppError) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const message = `invalid ${(error as any)?.path}:${(error as any)?.value} `;
+const handleDatabaseCastError = (error: Error.CastError) => {
+  const message = `invalid ${error?.path}:${error?.value} `;
+  return new AppError(message, 400);
+};
+
+const handleDatabaseDuplicateKeyError = (err: MongoServerError) => {
+  const duplicateFieldName = Object.keys(err?.errorResponse?.keyValue)?.[0];
+  const duplicateFieldValue =
+    err?.errorResponse?.keyValue?.[duplicateFieldName];
+
+  const message = `A tour with ${duplicateFieldName} of ${duplicateFieldValue} already exists`;
+  return new AppError(message, 400);
+};
+
+const handleDatabaseValidationError = (err: Error.ValidationError) => {
+  const message = Object.values(err?.errors)
+    .map((error) => error?.message)
+    ?.join(", ");
+
   return new AppError(message, 400);
 };
 
@@ -46,11 +64,18 @@ export default (
   if (process.env.NODE_ENV === "development") {
     generateDevelopmentError(error, res);
   } else if (process.env.NODE_ENV === "production") {
-    let modifiedError = { ...error };
-    if (error?.name === "castError") {
-      modifiedError = handleDatabaseCastError(error);
-    }
-    generateProductionError(modifiedError, res);
+    let err = Object.create(Object.getPrototypeOf(error));
+    Object.assign(err, error);
+    console.log("//////////////////////////////////");
+    console.log(err?.name);
+    console.log("//////////////////////////////////");
+    if (err?.name === "CastError") err = handleDatabaseCastError(err);
+    if (err?.code === 11000) err = handleDatabaseDuplicateKeyError(err);
+
+    if (err?.name === "ValidationError")
+      err = handleDatabaseValidationError(err);
+
+    generateProductionError(err, res);
   }
   next();
 };
