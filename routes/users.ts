@@ -1,14 +1,17 @@
-import express from 'express';
-import { userController } from '../controllers/users';
+import express from "express";
+import { userController } from "../controllers/users";
+import { authController } from "../controllers/auth";
 const userRouter = express.Router();
 
+userRouter.post("/signup", authController?.signup);
+
 userRouter
-  .route('/')
+  .route("/")
   .get(userController.useGetUsers)
   .post(userController.createUser);
 
 userRouter
-  .route('/:id')
+  .route("/:id")
   .get(userController.useGetUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
