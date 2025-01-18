@@ -71,7 +71,7 @@ export const getTour = catchAsync(async function (
   next: NextFunction
 ) {
   const tourId: string = req.params.id;
-  const tour = await Tour.findById(tourId);
+  const tour = await Tour.findById(tourId).populate({ path: "reviews" });
   if (!tour) return next(new AppError("Can't find the requested tour", 404));
   res.status(200).json({
     status: "success",
@@ -114,12 +114,14 @@ export const deleteTour = catchAsync(async function (
   next: NextFunction
 ) {
   const tourId: string = req.params.id;
-  const tour = await Tour.findByIdAndDelete(tourId);
-  if (!tour) return next(new AppError("Can't find the requested tour", 404));
+  
+  await Tour.findByIdAndDelete(tourId);
+  // if (!tour) return next(new AppError("Can't find the requested tour", 404));
 
   res.status(204).json({
     status: "success",
   });
+  next();
 });
 
 export const getTourStats = catchAsync(async function (

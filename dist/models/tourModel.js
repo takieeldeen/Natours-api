@@ -93,6 +93,34 @@ exports.tourSchema = new mongoose_1.default.Schema({
         type: Boolean,
         default: false,
     },
+    startLocation: {
+        type: {
+            type: String,
+            default: "Point",
+            enum: ["Point"],
+        },
+        Coordinates: {
+            type: [Number],
+        },
+        description: String,
+        address: String,
+    },
+    locations: [
+        {
+            type: {
+                type: String,
+                default: "Point",
+                enum: ["Point"],
+            },
+            Coordinates: [Number],
+            description: String,
+            day: Number,
+        },
+    ],
+    guides: {
+        type: Array,
+        ref: "users",
+    },
 }, {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
@@ -100,11 +128,34 @@ exports.tourSchema = new mongoose_1.default.Schema({
 exports.tourSchema.virtual("weekDuration").get(function () {
     return (this.duration / 7).toFixed(1);
 });
+exports.tourSchema.virtual("reviews", {
+    ref: "Review",
+    foreignField: "tour",
+    localField: "_id",
+});
 // Documents Middleware
-exports.tourSchema.pre("save", function () {
+// Embedding Documents ///////////////////////////
+// tourSchema.pre("save", async function (next) {
+//   // Takie Method Method /////////////////////////////
+//   this.guides = await User.find({ _id: { $in: this.guides } });
+//   // Jonas Method /////////////////////////////
+//   // const guidePromises = this.guides.map(
+//   //   async (guideId) => await User.findById(guideId)
+//   // );
+//   // this.guides = await Promise.all(guidePromises);
+//   next();
+// });
+exports.tourSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: "guides",
+    });
+    next();
+});
+exports.tourSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         const slug = (0, slugify_1.default)(this.name, { lower: true });
         this.set({ slug });
+        next();
     });
 });
 exports.tourSchema.post("save", (doc, next) => {

@@ -80,6 +80,34 @@ export const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      Coordinates: {
+        type: [Number],
+      },
+      description: String,
+      address: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        Coordinates: [Number],
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: {
+      type: Array,
+      ref: "users",
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -102,16 +130,54 @@ export type TourType = {
   images: string[] | undefined;
   createdAt: Date;
   startDates: Date[];
+  startLocation: {
+    type: "Point";
+    Coordinates: number[];
+    description: string;
+    address: string;
+  };
+  locations: {
+    type: "Point";
+    Coordinates: number[];
+    description: string;
+    day: number;
+  };
+  guides: any[];
 };
 
 tourSchema.virtual("weekDuration").get(function () {
   return (this.duration / 7).toFixed(1);
 });
+tourSchema.virtual("reviews", {
+  ref: "Review",
+  foreignField: "tour",
+  localField: "_id",
+});
 
 // Documents Middleware
-tourSchema.pre("save", async function () {
+// Embedding Documents ///////////////////////////
+// tourSchema.pre("save", async function (next) {
+//   // Takie Method Method /////////////////////////////
+//   this.guides = await User.find({ _id: { $in: this.guides } });
+//   // Jonas Method /////////////////////////////
+//   // const guidePromises = this.guides.map(
+//   //   async (guideId) => await User.findById(guideId)
+//   // );
+//   // this.guides = await Promise.all(guidePromises);
+//   next();
+// });
+
+tourSchema.pre(/^find/, function (next) {
+  (this as any).populate({
+    path: "guides",
+  });
+  next();
+});
+
+tourSchema.pre("save", async function (next) {
   const slug = slugify(this.name, { lower: true });
   this.set({ slug });
+  next();
 });
 
 tourSchema.post("save", (doc, next) => {

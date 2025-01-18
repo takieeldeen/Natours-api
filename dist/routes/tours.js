@@ -28,7 +28,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const tourController = __importStar(require("../controllers/tours/tourController"));
-console.log("object");
+const auth_1 = require("../controllers/auth");
+const reviews_1 = __importDefault(require("./reviews"));
 const tourRouter = express_1.default.Router();
 // Param Middleware that runs only when id param exists
 // tourRouter.param('id', tourController.checkTourId);
@@ -39,13 +40,22 @@ tourRouter
     .get(tourController.topCheap, tourController.getAllTours);
 tourRouter
     .route("/")
-    .get(tourController.getAllTours)
+    .get(auth_1.authController.protectRoute, tourController.getAllTours)
     .post(tourController.createTour);
 // .post(tourController.checkTourBody, tourController.createTour);
 tourRouter
     .route("/:id")
     .get(tourController.getTour)
     .patch(tourController.updateTour)
-    .delete(tourController.deleteTour);
+    .delete(auth_1.authController.protectRoute, auth_1.authController.restrictTo("admin"), tourController.deleteTour);
+tourRouter.use("/:id/reviews", reviews_1.default);
+// tourRouter
+//   .route("/:tourId/reviews")
+//   .post(
+//     authController.protectRoute,
+//     authController.restrictTo("user"),
+//     reviewController.createReview
+//   )
+//   .get(reviewController.getTourReviews);
 exports.default = tourRouter;
 //# sourceMappingURL=tours.js.map

@@ -21,6 +21,16 @@ const handleDatabaseValidationError = (err) => {
         .map((error) => error === null || error === void 0 ? void 0 : error.message)) === null || _a === void 0 ? void 0 : _a.join(", ");
     return new AppError_1.default(message, 400);
 };
+const handleJasonWebTokenError = (err) => {
+    let message;
+    if ((err === null || err === void 0 ? void 0 : err.name) === "TokenExpiredError") {
+        message = "Expired Token, Please Login again";
+    }
+    if ((err === null || err === void 0 ? void 0 : err.name) === "JsonWebTokenError") {
+        message = "Invalid Token, Please Login again";
+    }
+    return new AppError_1.default(message, 401);
+};
 const generateProductionError = (error, res) => {
     if (error.isOperational) {
         res.status(error.statusCode).json({
@@ -58,15 +68,17 @@ exports.default = (error, req, res, next) => {
     else if (process.env.NODE_ENV === "production") {
         let err = Object.create(Object.getPrototypeOf(error));
         Object.assign(err, error);
-        console.log("//////////////////////////////////");
-        console.log(err === null || err === void 0 ? void 0 : err.name);
-        console.log("//////////////////////////////////");
+        // Cast Error Handling ////////////////////////
         if ((err === null || err === void 0 ? void 0 : err.name) === "CastError")
             err = handleDatabaseCastError(err);
+        // Unique Constraint Error ////////////////////
         if ((err === null || err === void 0 ? void 0 : err.code) === 11000)
             err = handleDatabaseDuplicateKeyError(err);
+        // Validation Error Handling //////////////////
         if ((err === null || err === void 0 ? void 0 : err.name) === "ValidationError")
             err = handleDatabaseValidationError(err);
+        if ((err === null || err === void 0 ? void 0 : err.name) === "JsonWebTokenError" || (err === null || err === void 0 ? void 0 : err.name) === "TokenExpiredError")
+            err = handleJasonWebTokenError(err);
         generateProductionError(err, res);
     }
     next();

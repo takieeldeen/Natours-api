@@ -102,7 +102,7 @@ exports.getAllTours = (0, catchAsync_1.catchAsync)(function (req, res) {
 exports.getTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         const tourId = req.params.id;
-        const tour = yield tourModel_1.default.findById(tourId);
+        const tour = yield tourModel_1.default.findById(tourId).populate({ path: "reviews" });
         if (!tour)
             return next(new AppError_1.default("Can't find the requested tour", 404));
         res.status(200).json({
@@ -139,12 +139,12 @@ exports.updateTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
 exports.deleteTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         const tourId = req.params.id;
-        const tour = yield tourModel_1.default.findByIdAndDelete(tourId);
-        if (!tour)
-            return next(new AppError_1.default("Can't find the requested tour", 404));
+        yield tourModel_1.default.findByIdAndDelete(tourId);
+        // if (!tour) return next(new AppError("Can't find the requested tour", 404));
         res.status(204).json({
             status: "success",
         });
+        next();
     });
 });
 exports.getTourStats = (0, catchAsync_1.catchAsync)(function (req, res) {

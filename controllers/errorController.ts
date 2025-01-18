@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import AppError from "../utils/AppError";
 import { MongoServerError } from "mongodb";
 import { Error } from "mongoose";
+import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 
 const handleDatabaseCastError = (error: Error.CastError) => {
   const message = `invalid ${error?.path}:${error?.value} `;
@@ -23,6 +24,19 @@ const handleDatabaseValidationError = (err: Error.ValidationError) => {
     ?.join(", ");
 
   return new AppError(message, 400);
+};
+
+const handleJasonWebTokenError = (
+  err: JsonWebTokenError | TokenExpiredError
+) => {
+  let message: string;
+  if (err?.name === "TokenExpiredError") {
+    message = "Expired Token, Please Login again";
+  }
+  if (err?.name === "JsonWebTokenError") {
+    message = "Invalid Token, Please Login again";
+  }
+  return new AppError(message, 401);
 };
 
 const generateProductionError = (error: AppError, res: Response) => {
@@ -66,14 +80,15 @@ export default (
   } else if (process.env.NODE_ENV === "production") {
     let err = Object.create(Object.getPrototypeOf(error));
     Object.assign(err, error);
-    console.log("//////////////////////////////////");
-    console.log(err?.name);
-    console.log("//////////////////////////////////");
+    // Cast Error Handling ////////////////////////
     if (err?.name === "CastError") err = handleDatabaseCastError(err);
+    // Unique Constraint Error ////////////////////
     if (err?.code === 11000) err = handleDatabaseDuplicateKeyError(err);
-
+    // Validation Error Handling //////////////////
     if (err?.name === "ValidationError")
       err = handleDatabaseValidationError(err);
+    if (err?.name === "JsonWebTokenError" || err?.name === "TokenExpiredError")
+      err = handleJasonWebTokenError(err);
 
     generateProductionError(err, res);
   }

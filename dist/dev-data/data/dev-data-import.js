@@ -17,17 +17,17 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const fs_1 = __importDefault(require("fs"));
 const tourModel_1 = __importDefault(require("../../models/tourModel"));
-dotenv_1.default.config({ path: './config.env' });
-const URL = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
-mongoose_1.default.connect(URL).then(() => console.log('connected to DB successfully'));
+dotenv_1.default.config({ path: "./config.env" });
+const URL = process.env.DATABASE.replace("<PASSWORD>", process.env.DATABASE_PASSWORD);
+mongoose_1.default.connect(URL).then(() => console.log("connected to DB successfully"));
 // Import tour data
-const data = JSON.parse(fs_1.default.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
+const data = JSON.parse(fs_1.default.readFileSync(`${__dirname}/tours.json`, "utf-8"));
 // Data Insertion to your db
 const importData = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('Importing all your docs...');
+        console.log("Importing all your docs...");
         yield tourModel_1.default.create(data);
-        console.log('Data Loaded Successfully');
+        console.log("Data Loaded Successfully");
         process.exit();
     }
     catch (err) {
@@ -36,16 +36,16 @@ const importData = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 const deleteData = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('Deleting all your docs...');
+        console.log("Deleting all your docs...");
         yield tourModel_1.default.deleteMany();
-        console.log('Data Deleted Successfully');
+        console.log("Data Deleted Successfully");
         process.exit();
     }
     catch (err) {
         console.log(err);
     }
 });
-const scriptType = (_a = process === null || process === void 0 ? void 0 : process.argv[2]) === null || _a === void 0 ? void 0 : _a.replace('--', '');
+const scriptType = (_a = process === null || process === void 0 ? void 0 : process.argv[2]) === null || _a === void 0 ? void 0 : _a.replace("--", "");
 const options = {
     import: importData,
     delete: deleteData,
