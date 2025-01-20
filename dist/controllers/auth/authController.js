@@ -49,6 +49,14 @@ exports.signin = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void
     // Case 4 : Correct credentials
     (0, token_1.authenticateUser)(user, 200, res);
 }));
+// export const oktaSignIn = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     res.status(200).json({
+//       status: "success",
+//       token: "1234",
+//     });
+//   }
+// );
 exports.forgotPassword = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // 1. Check that the user exists
     const { email } = req.body;

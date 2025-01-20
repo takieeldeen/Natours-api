@@ -43,6 +43,15 @@ export const signin = catchAsync(
   }
 );
 
+// export const oktaSignIn = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     res.status(200).json({
+//       status: "success",
+//       token: "1234",
+//     });
+//   }
+// );
+
 export const forgotPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     // 1. Check that the user exists

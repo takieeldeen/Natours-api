@@ -10,6 +10,7 @@ const userRouter = express_1.default.Router();
 // UnProtected Authentication Routes ////////////////////////////
 userRouter.post("/signup", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.signup);
 userRouter.post("/signin", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.signin);
+userRouter.post("/okta-signin", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.oktaSignIn);
 userRouter.patch("/forgetPassword", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.forgotPassword);
 userRouter.patch("/resetPassword/:token", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.resetPassword);
 // Protected Authentication Routes ////////////////////////////
