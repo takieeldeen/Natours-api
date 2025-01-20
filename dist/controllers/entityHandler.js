@@ -29,6 +29,30 @@ class EntityHandler {
             });
         }));
     }
+    updateOne() {
+        return (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const updatedData = req === null || req === void 0 ? void 0 : req.body;
+            const documentId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
+            const doc = yield this.model.findByIdAndUpdate(documentId, updatedData, { new: true, runValidators: true });
+            if (!doc)
+                return next(new AppError_1.default("Document doesnt exist with that id", 404));
+            res.status(200).json({
+                status: "success",
+                data: doc,
+            });
+        }));
+    }
+    createOne() {
+        return (0, catchAsync_1.catchAsync)((req, res) => __awaiter(this, void 0, void 0, function* () {
+            const documentData = req === null || req === void 0 ? void 0 : req.body;
+            const doc = yield this.model.create(documentData);
+            res.status(201).json({
+                status: "success",
+                data: doc,
+            });
+        }));
+    }
 }
 exports.default = EntityHandler;
 //# sourceMappingURL=entityHandler.js.map

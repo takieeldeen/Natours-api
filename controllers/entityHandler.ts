@@ -26,4 +26,35 @@ export default class EntityHandler<T> {
       }
     );
   }
+
+  public updateOne() {
+    return catchAsync(
+      async (req: Request, res: Response, next: NextFunction) => {
+        const updatedData = req?.body;
+        const documentId = req.params?.id;
+        const doc = await this.model.findByIdAndUpdate(
+          documentId,
+          updatedData,
+          { new: true, runValidators: true }
+        );
+        if (!doc)
+          return next(new AppError("Document doesnt exist with that id", 404));
+        res.status(200).json({
+          status: "success",
+          data: doc,
+        });
+      }
+    );
+  }
+
+  public createOne() {
+    return catchAsync(async (req: Request, res: Response) => {
+      const documentData = req?.body;
+      const doc = await this.model.create(documentData);
+      res.status(201).json({
+        status: "success",
+        data: doc,
+      });
+    });
+  }
 }

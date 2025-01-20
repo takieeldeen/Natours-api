@@ -8,20 +8,27 @@ import Handler from "../entityHandler";
 
 const reviewsHandler = new Handler(Review);
 
-export const createReview = catchAsync(
+export const setUserAndTourId = catchAsync(
   async (req: ProtectedRequest, res: Response, next: NextFunction) => {
     if (!req.body.user) req.body.user = req?.user.id;
     if (!req.body.tour) req.body.tour = req.params.id;
-    const { review, rating, tour, user } = req.body;
-    const tourData = await Tour.findById(tour);
-    if (!tourData) return next(new AppError("Invalid Tour Id", 400));
-    const createdReview = await Review.create({ review, rating, tour, user });
-    res.status(201).json({
-      status: "success",
-      review: createdReview,
-    });
+    next();
   }
 );
+// export const createReview = catchAsync(
+//   async (req: ProtectedRequest, res: Response, next: NextFunction) => {
+//     if (!req.body.user) req.body.user = req?.user.id;
+//     if (!req.body.tour) req.body.tour = req.params.id;
+//     const { review, rating, tour, user } = req.body;
+//     const tourData = await Tour.findById(tour);
+//     if (!tourData) return next(new AppError("Invalid Tour Id", 400));
+//     const createdReview = await Review.create({ review, rating, tour, user });
+//     res.status(201).json({
+//       status: "success",
+//       review: createdReview,
+//     });
+//   }
+// );
 
 export const getTourReviews = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -54,3 +61,5 @@ export const getAllReviews = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const deleteReview = reviewsHandler.deleteOne();
+export const updateReview = reviewsHandler.updateOne();
+export const createReview = reviewsHandler.createOne();

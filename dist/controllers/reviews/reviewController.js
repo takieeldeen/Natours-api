@@ -12,28 +12,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteReview = exports.getAllReviews = exports.getTourReviews = exports.createReview = void 0;
+exports.createReview = exports.updateReview = exports.deleteReview = exports.getAllReviews = exports.getTourReviews = exports.setUserAndTourId = void 0;
 const catchAsync_1 = require("../../utils/catchAsync");
 const tourModel_1 = __importDefault(require("../../models/tourModel"));
 const AppError_1 = __importDefault(require("../../utils/AppError"));
 const reviewModel_1 = __importDefault(require("../../models/reviewModel"));
 const entityHandler_1 = __importDefault(require("../entityHandler"));
 const reviewsHandler = new entityHandler_1.default(reviewModel_1.default);
-exports.createReview = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+exports.setUserAndTourId = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.body.user)
         req.body.user = req === null || req === void 0 ? void 0 : req.user.id;
     if (!req.body.tour)
         req.body.tour = req.params.id;
-    const { review, rating, tour, user } = req.body;
-    const tourData = yield tourModel_1.default.findById(tour);
-    if (!tourData)
-        return next(new AppError_1.default("Invalid Tour Id", 400));
-    const createdReview = yield reviewModel_1.default.create({ review, rating, tour, user });
-    res.status(201).json({
-        status: "success",
-        review: createdReview,
-    });
+    next();
 }));
+// export const createReview = catchAsync(
+//   async (req: ProtectedRequest, res: Response, next: NextFunction) => {
+//     if (!req.body.user) req.body.user = req?.user.id;
+//     if (!req.body.tour) req.body.tour = req.params.id;
+//     const { review, rating, tour, user } = req.body;
+//     const tourData = await Tour.findById(tour);
+//     if (!tourData) return next(new AppError("Invalid Tour Id", 400));
+//     const createdReview = await Review.create({ review, rating, tour, user });
+//     res.status(201).json({
+//       status: "success",
+//       review: createdReview,
+//     });
+//   }
+// );
 exports.getTourReviews = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     if (!id)
@@ -64,4 +70,6 @@ exports.getAllReviews = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(voi
     });
 }));
 exports.deleteReview = reviewsHandler.deleteOne();
+exports.updateReview = reviewsHandler.updateOne();
+exports.createReview = reviewsHandler.createOne();
 //# sourceMappingURL=reviewController.js.map

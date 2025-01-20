@@ -35,12 +35,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonthlyPlan = exports.getTourStats = exports.deleteTour = exports.updateTour = exports.createTour = exports.getTour = exports.getAllTours = void 0;
+exports.getMonthlyPlan = exports.getTourStats = exports.getTour = exports.getAllTours = exports.updateTour = exports.deleteTour = exports.createTour = void 0;
 exports.topCheap = topCheap;
 const tourModel_1 = __importStar(require("../../models/tourModel"));
 const QueryAPI_1 = require("../../utils/QueryAPI");
 const catchAsync_1 = require("../../utils/catchAsync");
 const AppError_1 = __importDefault(require("../../utils/AppError"));
+const entityHandler_1 = __importDefault(require("../entityHandler"));
 // Old method
 // export async function getAllTours(req: Request, res: Response) {
 //   try {
@@ -70,6 +71,10 @@ const AppError_1 = __importDefault(require("../../utils/AppError"));
 //     });
 //   }
 // }
+const tourCRUDHandler = new entityHandler_1.default(tourModel_1.default);
+exports.createTour = tourCRUDHandler.createOne();
+exports.deleteTour = tourCRUDHandler.deleteOne();
+exports.updateTour = tourCRUDHandler.updateOne();
 function topCheap(req, res, next) {
     req.query.sort = "-ratingsAverage,price";
     req.query.limit = "5";
@@ -111,42 +116,46 @@ exports.getTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
         });
     });
 });
-exports.createTour = (0, catchAsync_1.catchAsync)(function (req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const tourData = req.body;
-        const newTour = yield tourModel_1.default.create(tourData);
-        res.status(201).json({
-            status: "success",
-            tour: newTour,
-        });
-    });
-});
-exports.updateTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const tourId = req.params.id;
-        const newTour = yield tourModel_1.default.findByIdAndUpdate(tourId, req.body, {
-            new: true,
-            runValidators: true,
-        });
-        if (!newTour)
-            return next(new AppError_1.default("Can't find the requested tour", 404));
-        res.status(200).json({
-            status: "success",
-            tour: newTour,
-        });
-    });
-});
-exports.deleteTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const tourId = req.params.id;
-        yield tourModel_1.default.findByIdAndDelete(tourId);
-        // if (!tour) return next(new AppError("Can't find the requested tour", 404));
-        res.status(204).json({
-            status: "success",
-        });
-        next();
-    });
-});
+// export const createTour = catchAsync(async function (
+//   req: Request,
+//   res: Response
+// ) {
+//   const tourData: TourType = req.body;
+//   const newTour = await Tour.create(tourData);
+//   res.status(201).json({
+//     status: "success",
+//     tour: newTour,
+//   });
+// });
+// export const updateTour = catchAsync(async function (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const tourId: string = req.params.id;
+//   const newTour = await Tour.findByIdAndUpdate(tourId, req.body, {
+//     new: true,
+//     runValidators: true,
+//   });
+//   if (!newTour) return next(new AppError("Can't find the requested tour", 404));
+//   res.status(200).json({
+//     status: "success",
+//     tour: newTour,
+//   });
+// });
+// export const deleteTour = catchAsync(async function (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const tourId: string = req.params.id;
+//   await Tour.findByIdAndDelete(tourId);
+//   // if (!tour) return next(new AppError("Can't find the requested tour", 404));
+//   res.status(204).json({
+//     status: "success",
+//   });
+//   next();
+// });
 exports.getTourStats = (0, catchAsync_1.catchAsync)(function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const stats = yield tourModel_1.default.aggregate([

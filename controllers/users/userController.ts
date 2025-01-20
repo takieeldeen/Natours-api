@@ -42,11 +42,13 @@ export function useGetUser(req: Request, res: Response) {
   });
 }
 
-export function updateUser(req: Request, res: Response) {
-  res.status(500).json({
-    status: "fail",
-    message: "This route isnt yet implemented",
-  });
-}
+// export function updateUser(req: Request, res: Response) {
+//   res.status(500).json({
+//     status: "fail",
+//     message: "This route isnt yet implemented",
+//   });
+// }
 
 export const deleteUser = userHandler.deleteOne();
+// DON'T Use This Route to Update Password
+export const updateUser = userHandler.updateOne();
