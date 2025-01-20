@@ -35,12 +35,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonthlyPlan = exports.getTourStats = exports.getTour = exports.getAllTours = exports.updateTour = exports.deleteTour = exports.createTour = void 0;
+exports.getMonthlyPlan = exports.getTourStats = exports.updateTour = exports.deleteTour = exports.getAllTours = exports.getTour = exports.createTour = void 0;
 exports.topCheap = topCheap;
 const tourModel_1 = __importStar(require("../../models/tourModel"));
-const QueryAPI_1 = require("../../utils/QueryAPI");
 const catchAsync_1 = require("../../utils/catchAsync");
-const AppError_1 = __importDefault(require("../../utils/AppError"));
 const entityHandler_1 = __importDefault(require("../entityHandler"));
 // Old method
 // export async function getAllTours(req: Request, res: Response) {
@@ -73,6 +71,8 @@ const entityHandler_1 = __importDefault(require("../entityHandler"));
 // }
 const tourCRUDHandler = new entityHandler_1.default(tourModel_1.default);
 exports.createTour = tourCRUDHandler.createOne();
+exports.getTour = tourCRUDHandler.getOne({ path: "reviews" });
+exports.getAllTours = tourCRUDHandler.getAll(tourModel_1.tourSchema);
 exports.deleteTour = tourCRUDHandler.deleteOne();
 exports.updateTour = tourCRUDHandler.updateOne();
 function topCheap(req, res, next) {
@@ -82,40 +82,42 @@ function topCheap(req, res, next) {
     next();
 }
 // OOP Method
-exports.getAllTours = (0, catchAsync_1.catchAsync)(function (req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Extracting all query (filters,sort,projection,...)
-        const queryStrings = req.query;
-        // Filtering the filter props only by Including only the schema props
-        const queryObj = Object.assign({}, queryStrings);
-        const toursQuery = new QueryAPI_1.QueryAPI(queryObj, tourModel_1.tourSchema, tourModel_1.default)
-            .filter()
-            .sort()
-            .select()
-            .paginate().query;
-        const tours = yield toursQuery;
-        // return the results
-        res.status(200).json({
-            status: "success",
-            results: tours.length,
-            data: {
-                tours,
-            },
-        });
-    });
-});
-exports.getTour = (0, catchAsync_1.catchAsync)(function (req, res, next) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const tourId = req.params.id;
-        const tour = yield tourModel_1.default.findById(tourId).populate({ path: "reviews" });
-        if (!tour)
-            return next(new AppError_1.default("Can't find the requested tour", 404));
-        res.status(200).json({
-            status: "success",
-            tour,
-        });
-    });
-});
+// export const getAllTours = catchAsync(async function (
+//   req: Request,
+//   res: Response
+// ) {
+//   // Extracting all query (filters,sort,projection,...)
+//   const queryStrings = req.query;
+//   // Filtering the filter props only by Including only the schema props
+//   const queryObj = { ...queryStrings };
+//   const toursQuery = new QueryAPI(queryObj, tourSchema, Tour)
+//     .filter()
+//     .sort()
+//     .select()
+//     .paginate().query;
+//   const tours = await toursQuery;
+//   // return the results
+//   res.status(200).json({
+//     status: "success",
+//     results: tours.length,
+//     data: {
+//       tours,
+//     },
+//   });
+// });
+// export const getTour = catchAsync(async function (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const tourId: string = req.params.id;
+//   const tour = await Tour.findById(tourId).populate({ path: "reviews" });
+//   if (!tour) return next(new AppError("Can't find the requested tour", 404));
+//   res.status(200).json({
+//     status: "success",
+//     tour,
+//   });
+// });
 // export const createTour = catchAsync(async function (
 //   req: Request,
 //   res: Response

@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const catchAsync_1 = require("../utils/catchAsync");
 const AppError_1 = __importDefault(require("../utils/AppError"));
+const QueryAPI_1 = require("../utils/QueryAPI");
 class EntityHandler {
     constructor(model) {
         this.model = model;
@@ -50,6 +51,48 @@ class EntityHandler {
             res.status(201).json({
                 status: "success",
                 data: doc,
+            });
+        }));
+    }
+    getOne(popOptions) {
+        return (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const id = req.params.id;
+            if (!id)
+                return next(new AppError_1.default("Please provide the document id", 400));
+            let query = this.model.findById(id);
+            if (popOptions)
+                query = query.populate(popOptions);
+            const doc = yield query;
+            if (!doc)
+                return next(new AppError_1.default("Document doesnt exist with that id", 404));
+            res.status(200).json({
+                status: "success",
+                data: doc,
+            });
+        }));
+    }
+    getAll(resourceSchema) {
+        return (0, catchAsync_1.catchAsync)((req, res) => __awaiter(this, void 0, void 0, function* () {
+            // The next three lines is to allow for nested reviews endpoint
+            const { id } = req.params;
+            let filter = {};
+            if (id)
+                filter = { tour: req.params.id };
+            // Extracting all query (filters,sort,projection,...)
+            const queryStrings = req.query;
+            // Filtering the filter props only by Including only the schema props
+            const queryObj = Object.assign({}, queryStrings);
+            const docsQuery = new QueryAPI_1.QueryAPI(queryObj, resourceSchema, this.model.find(filter))
+                .filter()
+                .sort()
+                .select()
+                .paginate().query;
+            const docs = yield docsQuery;
+            // return the results
+            res.status(200).json({
+                status: "success",
+                results: docs.length,
+                data: docs,
             });
         }));
     }

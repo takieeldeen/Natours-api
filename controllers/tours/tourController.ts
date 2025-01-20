@@ -1,8 +1,6 @@
 import Tour, { tourSchema } from "../../models/tourModel";
 import { Request, Response, NextFunction } from "express";
-import { QueryAPI } from "../../utils/QueryAPI";
 import { catchAsync } from "../../utils/catchAsync";
-import AppError from "../../utils/AppError";
 import EntityHandler from "../entityHandler";
 // Old method
 // export async function getAllTours(req: Request, res: Response) {
@@ -37,6 +35,8 @@ import EntityHandler from "../entityHandler";
 const tourCRUDHandler = new EntityHandler(Tour);
 
 export const createTour = tourCRUDHandler.createOne();
+export const getTour = tourCRUDHandler.getOne({ path: "reviews" });
+export const getAllTours = tourCRUDHandler.getAll(tourSchema);
 export const deleteTour = tourCRUDHandler.deleteOne();
 export const updateTour = tourCRUDHandler.updateOne();
 
@@ -48,43 +48,43 @@ export function topCheap(req: Request, res: Response, next: NextFunction) {
 }
 
 // OOP Method
-export const getAllTours = catchAsync(async function (
-  req: Request,
-  res: Response
-) {
-  // Extracting all query (filters,sort,projection,...)
-  const queryStrings = req.query;
-  // Filtering the filter props only by Including only the schema props
-  const queryObj = { ...queryStrings };
-  const toursQuery = new QueryAPI(queryObj, tourSchema, Tour)
-    .filter()
-    .sort()
-    .select()
-    .paginate().query;
-  const tours = await toursQuery;
-  // return the results
-  res.status(200).json({
-    status: "success",
-    results: tours.length,
-    data: {
-      tours,
-    },
-  });
-});
+// export const getAllTours = catchAsync(async function (
+//   req: Request,
+//   res: Response
+// ) {
+//   // Extracting all query (filters,sort,projection,...)
+//   const queryStrings = req.query;
+//   // Filtering the filter props only by Including only the schema props
+//   const queryObj = { ...queryStrings };
+//   const toursQuery = new QueryAPI(queryObj, tourSchema, Tour)
+//     .filter()
+//     .sort()
+//     .select()
+//     .paginate().query;
+//   const tours = await toursQuery;
+//   // return the results
+//   res.status(200).json({
+//     status: "success",
+//     results: tours.length,
+//     data: {
+//       tours,
+//     },
+//   });
+// });
 
-export const getTour = catchAsync(async function (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const tourId: string = req.params.id;
-  const tour = await Tour.findById(tourId).populate({ path: "reviews" });
-  if (!tour) return next(new AppError("Can't find the requested tour", 404));
-  res.status(200).json({
-    status: "success",
-    tour,
-  });
-});
+// export const getTour = catchAsync(async function (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const tourId: string = req.params.id;
+//   const tour = await Tour.findById(tourId).populate({ path: "reviews" });
+//   if (!tour) return next(new AppError("Can't find the requested tour", 404));
+//   res.status(200).json({
+//     status: "success",
+//     tour,
+//   });
+// });
 
 // export const createTour = catchAsync(async function (
 //   req: Request,

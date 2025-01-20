@@ -31,14 +31,7 @@ export const getAllUsers = catchAsync(async function (
 export function createUser(req: Request, res: Response) {
   res.status(500).json({
     status: "fail",
-    message: "This route isnt yet implemented",
-  });
-}
-
-export function useGetUser(req: Request, res: Response) {
-  res.status(500).json({
-    status: "fail",
-    message: "This route isnt yet implemented",
+    message: "This route isnt defined please use /signup",
   });
 }
 
@@ -49,6 +42,7 @@ export function useGetUser(req: Request, res: Response) {
 //   });
 // }
 
+export const getUser = userHandler.getOne();
 export const deleteUser = userHandler.deleteOne();
 // DON'T Use This Route to Update Password
 export const updateUser = userHandler.updateOne();

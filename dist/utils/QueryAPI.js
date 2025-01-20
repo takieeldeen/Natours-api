@@ -11,6 +11,7 @@ class QueryAPI {
         //1. Basic Filtering /////////////////////////////
         //    Take a copy of all the queryStrings
         const filters = Object.assign({}, this.queryStrings);
+        console.log(filters);
         //    Filter out any non schema query
         Object.keys(filters).forEach((key) => {
             var _a, _b;

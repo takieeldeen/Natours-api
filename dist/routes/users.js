@@ -23,7 +23,7 @@ userRouter
     .post(users_1.userController.createUser);
 userRouter
     .route("/:id")
-    .get(users_1.userController.useGetUser)
+    .get(users_1.userController.getUser)
     .patch(users_1.userController.updateUser)
     .delete(auth_1.authController.protectRoute, auth_1.authController.restrictTo("admin"), users_1.userController.deleteUser);
 exports.default = userRouter;

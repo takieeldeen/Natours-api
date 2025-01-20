@@ -12,6 +12,7 @@ export class QueryAPI {
     //1. Basic Filtering /////////////////////////////
     //    Take a copy of all the queryStrings
     const filters = { ...this.queryStrings };
+    console.log(filters);
     //    Filter out any non schema query
     Object.keys(filters).forEach((key) => {
       if (!this.resourceSchema?.obj?.[key]) delete filters[key];

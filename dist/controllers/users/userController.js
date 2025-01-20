@@ -35,9 +35,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUser = exports.deleteUser = exports.getAllUsers = void 0;
+exports.updateUser = exports.deleteUser = exports.getUser = exports.getAllUsers = void 0;
 exports.createUser = createUser;
-exports.useGetUser = useGetUser;
 const QueryAPI_1 = require("../../utils/QueryAPI");
 const userModel_1 = __importStar(require("../../models/userModel"));
 const catchAsync_1 = require("../../utils/catchAsync");
@@ -65,13 +64,7 @@ exports.getAllUsers = (0, catchAsync_1.catchAsync)(function (req, res) {
 function createUser(req, res) {
     res.status(500).json({
         status: "fail",
-        message: "This route isnt yet implemented",
-    });
-}
-function useGetUser(req, res) {
-    res.status(500).json({
-        status: "fail",
-        message: "This route isnt yet implemented",
+        message: "This route isnt defined please use /signup",
     });
 }
 // export function updateUser(req: Request, res: Response) {
@@ -80,6 +73,7 @@ function useGetUser(req, res) {
 //     message: "This route isnt yet implemented",
 //   });
 // }
+exports.getUser = userHandler.getOne();
 exports.deleteUser = userHandler.deleteOne();
 // DON'T Use This Route to Update Password
 exports.updateUser = userHandler.updateOne();

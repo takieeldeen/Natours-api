@@ -33,7 +33,7 @@ userRouter
 
 userRouter
   .route("/:id")
-  .get(userController.useGetUser)
+  .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(
     authController.protectRoute,
