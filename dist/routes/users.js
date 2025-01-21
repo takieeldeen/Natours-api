@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const users_1 = require("../controllers/users");
 const auth_1 = require("../controllers/auth");
+const authController_1 = require("../controllers/auth/authController");
 const userRouter = express_1.default.Router();
 // UnProtected Authentication Routes ////////////////////////////
 userRouter.post("/signup", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.signup);
@@ -13,6 +14,7 @@ userRouter.post("/signin", auth_1.authController === null || auth_1.authControll
 // userRouter.post("/okta-signin", authController?.oktaSignIn);
 userRouter.patch("/forgetPassword", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.forgotPassword);
 userRouter.patch("/resetPassword/:token", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.resetPassword);
+userRouter.get("/profile", authController_1.protectRoute, users_1.userController.getCurrentUser, users_1.userController.getUser);
 // Protected Authentication Routes ////////////////////////////
 userRouter.patch("/changePassword", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.protectRoute, auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.changePassword);
 userRouter.patch("/updateCurrentUser", auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.protectRoute, auth_1.authController === null || auth_1.authController === void 0 ? void 0 : auth_1.authController.updateCurrentUser);

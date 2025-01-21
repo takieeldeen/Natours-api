@@ -1,6 +1,7 @@
 import express from "express";
 import { userController } from "../controllers/users";
 import { authController } from "../controllers/auth";
+import { protectRoute } from "../controllers/auth/authController";
 const userRouter = express.Router();
 
 // UnProtected Authentication Routes ////////////////////////////
@@ -9,6 +10,12 @@ userRouter.post("/signin", authController?.signin);
 // userRouter.post("/okta-signin", authController?.oktaSignIn);
 userRouter.patch("/forgetPassword", authController?.forgotPassword);
 userRouter.patch("/resetPassword/:token", authController?.resetPassword);
+userRouter.get(
+  "/profile",
+  protectRoute,
+  userController.getCurrentUser,
+  userController.getUser
+);
 // Protected Authentication Routes ////////////////////////////
 userRouter.patch(
   "/changePassword",
