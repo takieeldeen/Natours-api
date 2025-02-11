@@ -43,6 +43,23 @@ export const signin = catchAsync(
   }
 );
 
+export const logout = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (!req?.cookies?.session)
+      return next(
+        new AppError("Please send the JWT token with the request", 400)
+      );
+    res.cookie("session", "loggedOut", {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
+
+    res.status(200).json({
+      status: "success",
+    });
+  }
+);
+
 // export const oktaSignIn = catchAsync(
 //   async (req: Request, res: Response, next: NextFunction) => {
 //     res.status(200).json({
@@ -163,7 +180,13 @@ export const updateCurrentUser = catchAsync(
           400
         )
       );
-    const updatedData = filterObject(req?.body, "name", "email", "photo");
+    const updatedData: { [prop: string]: any } = filterObject(
+      req?.body,
+      "name",
+      "email",
+      "photo"
+    );
+    if (req?.file) updatedData.photo = req?.file?.filename;
     const user = await User.findByIdAndUpdate(
       (req as any)?.user?.id,
       updatedData,
@@ -179,10 +202,36 @@ export const updateCurrentUser = catchAsync(
   }
 );
 
+export const protectView = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // 1. Get the token and check if it exists
+    const token = req?.cookies?.session;
+    if (!token) return next();
+    // 2. Check the token is valid
+    const decodedToken = await validateToken(token);
+    // 3. Check if the user still exists
+    const requestOwner = await User.findById(decodedToken?.id);
+    if (!requestOwner) return next();
+    // 4. Check if the user haven't changed password after getting the token
+    if ((requestOwner as any).changePasswordAfter(decodedToken?.iat))
+      return next();
+    // 5. Attach user data to the request
+    (res as any).locals.user = requestOwner;
+    next();
+  } catch {
+    next();
+  }
+};
+
 export const protectRoute = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     // 1. Get the token and check if it exists
-    const token = req?.headers?.authorization?.split(" ")?.[1];
+    const token =
+      req?.headers?.authorization?.split(" ")?.[1] ?? req?.cookies?.session;
     if (!token) return next(new AppError("User is not logged in.", 401));
     // 2. Check the token is valid
     const decodedToken = await validateToken(token);
@@ -196,6 +245,7 @@ export const protectRoute = catchAsync(
       );
     // 5. Attach user data to the request
     (req as any).user = requestOwner;
+    (res as any).locals.user = requestOwner;
 
     next();
   }

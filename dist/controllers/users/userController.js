@@ -35,11 +35,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUser = exports.deleteUser = exports.getUser = exports.getAllUsers = exports.getCurrentUser = void 0;
+exports.updateUser = exports.deleteUser = exports.getUser = exports.getAllUsers = exports.getCurrentUser = exports.uploadUserFormData = void 0;
 exports.createUser = createUser;
 const userModel_1 = __importStar(require("../../models/userModel"));
 const entityHandler_1 = __importDefault(require("../entityHandler"));
 const catchAsync_1 = require("../../utils/catchAsync");
+const multer_1 = __importDefault(require("multer"));
+const AppError_1 = __importDefault(require("../../utils/AppError"));
+const multerStorage = multer_1.default.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "public/img/users");
+    },
+    filename: (req, file, cb) => {
+        var _a, _b;
+        const ext = (_a = file === null || file === void 0 ? void 0 : file.mimetype) === null || _a === void 0 ? void 0 : _a.split("/")[1];
+        cb(null, `user-${(_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id}-${Date.now()}.${ext}`);
+    },
+});
+const upload = (0, multer_1.default)({
+    storage: multerStorage,
+    fileFilter: (req, file, cb) => {
+        var _a;
+        if ((_a = file === null || file === void 0 ? void 0 : file.mimetype) === null || _a === void 0 ? void 0 : _a.startsWith("image")) {
+            cb(null, true);
+        }
+        else {
+            cb(new AppError_1.default("Only Images are Allowed", 400));
+        }
+    },
+});
+exports.uploadUserFormData = upload.single("photo");
 const userHandler = new entityHandler_1.default(userModel_1.default);
 // export const getAllUsers = catchAsync(async function (
 //   req: Request,

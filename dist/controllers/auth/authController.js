@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.restrictTo = exports.protectRoute = exports.updateCurrentUser = exports.deleteCurrentUser = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.signin = exports.signup = void 0;
+exports.restrictTo = exports.protectRoute = exports.protectView = exports.updateCurrentUser = exports.deleteCurrentUser = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.logout = exports.signin = exports.signup = void 0;
 const userModel_1 = __importDefault(require("../../models/userModel"));
 const catchAsync_1 = require("../../utils/catchAsync");
 const AppError_1 = __importDefault(require("../../utils/AppError"));
@@ -48,6 +48,18 @@ exports.signin = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void
         return next(new AppError_1.default("Wrong Credentials", 401));
     // Case 4 : Correct credentials
     (0, token_1.authenticateUser)(user, 200, res);
+}));
+exports.logout = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    if (!((_a = req === null || req === void 0 ? void 0 : req.cookies) === null || _a === void 0 ? void 0 : _a.session))
+        return next(new AppError_1.default("Please send the JWT token with the request", 400));
+    res.cookie("session", "loggedOut", {
+        expires: new Date(Date.now() + 10 * 1000),
+        httpOnly: true,
+    });
+    res.status(200).json({
+        status: "success",
+    });
 }));
 // export const oktaSignIn = catchAsync(
 //   async (req: Request, res: Response, next: NextFunction) => {
@@ -139,11 +151,13 @@ exports.deleteCurrentUser = (0, catchAsync_1.catchAsync)((req, res) => __awaiter
     });
 }));
 exports.updateCurrentUser = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     if (((_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.password) || ((_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.confirmPassword))
         return next(new AppError_1.default("This Endpoint isn't used for updating password, please use /changePassword", 400));
     const updatedData = (0, objects_1.filterObject)(req === null || req === void 0 ? void 0 : req.body, "name", "email", "photo");
-    const user = yield userModel_1.default.findByIdAndUpdate((_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id, updatedData, {
+    if (req === null || req === void 0 ? void 0 : req.file)
+        updatedData.photo = (_c = req === null || req === void 0 ? void 0 : req.file) === null || _c === void 0 ? void 0 : _c.filename;
+    const user = yield userModel_1.default.findByIdAndUpdate((_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id, updatedData, {
         new: true,
         runValidators: true,
     });
@@ -152,10 +166,35 @@ exports.updateCurrentUser = (0, catchAsync_1.catchAsync)((req, res, next) => __a
         user,
     });
 }));
+const protectView = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        // 1. Get the token and check if it exists
+        const token = (_a = req === null || req === void 0 ? void 0 : req.cookies) === null || _a === void 0 ? void 0 : _a.session;
+        if (!token)
+            return next();
+        // 2. Check the token is valid
+        const decodedToken = yield (0, token_1.validateToken)(token);
+        // 3. Check if the user still exists
+        const requestOwner = yield userModel_1.default.findById(decodedToken === null || decodedToken === void 0 ? void 0 : decodedToken.id);
+        if (!requestOwner)
+            return next();
+        // 4. Check if the user haven't changed password after getting the token
+        if (requestOwner.changePasswordAfter(decodedToken === null || decodedToken === void 0 ? void 0 : decodedToken.iat))
+            return next();
+        // 5. Attach user data to the request
+        res.locals.user = requestOwner;
+        next();
+    }
+    catch (_b) {
+        next();
+    }
+});
+exports.protectView = protectView;
 exports.protectRoute = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     // 1. Get the token and check if it exists
-    const token = (_c = (_b = (_a = req === null || req === void 0 ? void 0 : req.headers) === null || _a === void 0 ? void 0 : _a.authorization) === null || _b === void 0 ? void 0 : _b.split(" ")) === null || _c === void 0 ? void 0 : _c[1];
+    const token = (_d = (_c = (_b = (_a = req === null || req === void 0 ? void 0 : req.headers) === null || _a === void 0 ? void 0 : _a.authorization) === null || _b === void 0 ? void 0 : _b.split(" ")) === null || _c === void 0 ? void 0 : _c[1]) !== null && _d !== void 0 ? _d : (_e = req === null || req === void 0 ? void 0 : req.cookies) === null || _e === void 0 ? void 0 : _e.session;
     if (!token)
         return next(new AppError_1.default("User is not logged in.", 401));
     // 2. Check the token is valid
@@ -169,6 +208,7 @@ exports.protectRoute = (0, catchAsync_1.catchAsync)((req, res, next) => __awaite
         return next(new AppError_1.default("User Changed Password Please sign in again", 401));
     // 5. Attach user data to the request
     req.user = requestOwner;
+    res.locals.user = requestOwner;
     next();
 }));
 const restrictTo = (...roles) => (req, res, next) => {

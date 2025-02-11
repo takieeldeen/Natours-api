@@ -1,0 +1,29 @@
+name: Deploy to Cloud Foundry
+on:
+  workflow_call:
+    secrets:
+      USERNAME:
+        description: Your Cloud Foundry Username
+        required: true
+      PASSWORD:
+        description: Your Cloud Foundry Password
+        required: true
+      API_ENDPOINT:
+        description: Your Cloud Foundry API Endpoint
+        required: true
+jobs:
+  deploying-to-cloud-foundry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Cloud Foundry repo to your os
+        run: |
+          wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo gpg --dearmor -o /usr/share/keyrings/cli.cloudfoundry.org.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+
+      - name: Install Cloud Foundry
+        run: |
+          sudo apt-get update
+          sudo apt-get install cf8-cli
+
+      - name: Login to your cloud foundry space
+        run: cf login -a ${{secrets.API_ENDPOINT}} -u ${{secrets.USERNAME}} -p ${{secrets.PASSWORD}}

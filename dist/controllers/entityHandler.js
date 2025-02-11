@@ -87,6 +87,7 @@ class EntityHandler {
                 .sort()
                 .select()
                 .paginate().query;
+            // const docs = await docsQuery.explain();
             const docs = yield docsQuery;
             // return the results
             res.status(200).json({

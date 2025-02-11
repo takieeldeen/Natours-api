@@ -15,7 +15,19 @@ const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize
 const helmet_1 = __importDefault(require("helmet"));
 const hpp_1 = __importDefault(require("hpp"));
 const routes_1 = require("./routes");
+const path_1 = __importDefault(require("path"));
+const views_1 = __importDefault(require("./routes/views"));
 const app = (0, express_1.default)();
+// Body parser
+app.use(express_1.default.json({ limit: "10kb" }));
+app.use(express_1.default.urlencoded({
+    extended: true,
+    limit: "10kb",
+}));
+// Server Side Rendering
+app.set("view engine", "pug");
+app.set("views", path_1.default.join(__dirname, "views"));
+app.use(express_1.default.static(path_1.default.join(__dirname, "public")));
 // Third Party Middlewares
 if (process.env.NODE_ENV === "development")
     app.use((0, morgan_1.default)("dev"));
@@ -38,15 +50,15 @@ app.use((0, hpp_1.default)({
         "price",
     ],
 }));
-app.use((0, helmet_1.default)());
-// Body parser
-app.use(express_1.default.json({ limit: "10kb" }));
+app.use((0, helmet_1.default)({ contentSecurityPolicy: false }));
 // Sanitizer For Non Query Injection
 app.use((0, express_mongo_sanitize_1.default)());
-// Mounting Routers
+// Mounting API Routers
 app.use("/api/v1/tours", tours_1.default);
 app.use("/api/v1/users", users_1.default);
 app.use("/api/v1/reviews", routes_1.reviewRouter);
+// Mounting Website Routes
+app.use("/", views_1.default);
 app.use("*", (req, res, next) => {
     const error = new AppError_1.default(`Couldn't find any handler for route ${req.originalUrl}`, 404);
     next(error);

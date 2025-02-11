@@ -1,0 +1,42 @@
+name: Deploy to Development Cloud Foundry
+description: Action Used to Deploy to Cloud Foundry Development Space
+inputs:
+  CF_USERNAME:
+    description: Cloud Foundry Username
+    required: true
+
+  CF_PASSWORD:
+    description: Cloud Foundry Password
+    required: true
+
+  CF_API_ENDPOINT:
+    description: Cloud Foundry API Endpoint
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Test Log
+      shell: bash
+      run: echo "${{ inputs.CF_API_ENDPOINT }}"
+
+    - name: Install Cloud Foundry
+      shell: bash
+      run: |
+        wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo gpg --dearmor -o /usr/share/keyrings/cli.cloudfoundry.org.gpg
+        echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+        sudo apt-get update
+        sudo apt-get install cf8-cli
+
+    - name: Login to Cloud Foundry
+      shell: bash
+      env:
+        CF_API_ENDPOINT: ${{ inputs.CF_API_ENDPOINT }}
+        CF_USERNAME: ${{ inputs.CF_USERNAME }}
+        CF_PASSWORD: ${{ inputs.CF_PASSWORD }}
+      run: |
+        cf login -a "$CF_API_ENDPOINT" -u "$CF_USERNAME" -p "$CF_PASSWORD" -o dd192eb7trial -s qa
+
+    - name: Deploy to cloud foundry
+      shell: bash
+      run: cf push

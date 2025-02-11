@@ -60,6 +60,19 @@ export const getAllReviews = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// export const duplicateReviewsGuard = catchAsync(
+// async (req: ProtectedRequest, res: Response, next: NextFunction) => {
+// const userId = req?.user?.id;
+// const tourId = req?.params?.id;
+// const authorReviews = await Review.find({ user: userId, tour: tourId });
+// if (authorReviews?.length > 0)
+// return next(
+// new AppError("Can't Write Duplicate reviews for the same tour", 400)
+// );
+// next();
+// }
+// );
+//
 export const deleteReview = reviewsHandler.deleteOne();
 export const updateReview = reviewsHandler.updateOne();
 export const createReview = reviewsHandler.createOne();

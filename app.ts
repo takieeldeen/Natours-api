@@ -10,7 +10,23 @@ import mongoSanitize from "express-mongo-sanitize";
 import helmet from "helmet";
 import hpp from "hpp";
 import { reviewRouter } from "./routes";
+import path from "path";
+import viewsRouter from "./routes/views";
 const app = express();
+
+// Body parser
+app.use(express.json({ limit: "10kb" }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10kb",
+  })
+);
+// Server Side Rendering
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
+
 // Third Party Middlewares
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 const limiter = rateLimit({
@@ -34,15 +50,17 @@ app.use(
     ],
   })
 );
-app.use(helmet());
-// Body parser
-app.use(express.json({ limit: "10kb" }));
+app.use(helmet({ contentSecurityPolicy: false }));
+
 // Sanitizer For Non Query Injection
 app.use(mongoSanitize());
-// Mounting Routers
+
+// Mounting API Routers
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
+// Mounting Website Routes
+app.use("/", viewsRouter);
 app.use("*", (req, res, next) => {
   const error = new AppError(
     `Couldn't find any handler for route ${req.originalUrl}`,

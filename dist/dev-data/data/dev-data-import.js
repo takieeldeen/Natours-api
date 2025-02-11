@@ -17,16 +17,22 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const fs_1 = __importDefault(require("fs"));
 const tourModel_1 = __importDefault(require("../../models/tourModel"));
+const reviewModel_1 = __importDefault(require("../../models/reviewModel"));
+const userModel_1 = __importDefault(require("../../models/userModel"));
 dotenv_1.default.config({ path: "./config.env" });
 const URL = process.env.DATABASE.replace("<PASSWORD>", process.env.DATABASE_PASSWORD);
 mongoose_1.default.connect(URL).then(() => console.log("connected to DB successfully"));
 // Import tour data
-const data = JSON.parse(fs_1.default.readFileSync(`${__dirname}/tours.json`, "utf-8"));
+const tours = JSON.parse(fs_1.default.readFileSync(`${__dirname}/tours.json`, "utf-8"));
+const reviews = JSON.parse(fs_1.default.readFileSync(`${__dirname}/reviews.json`, "utf-8"));
+const users = JSON.parse(fs_1.default.readFileSync(`${__dirname}/users.json`, "utf-8"));
 // Data Insertion to your db
 const importData = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("Importing all your docs...");
-        yield tourModel_1.default.create(data);
+        yield tourModel_1.default.create(tours, { validateBeforeSave: false });
+        yield userModel_1.default.create(users, { validateBeforeSave: false });
+        yield reviewModel_1.default.create(reviews, { validateBeforeSave: false });
         console.log("Data Loaded Successfully");
         process.exit();
     }
@@ -38,6 +44,8 @@ const deleteData = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("Deleting all your docs...");
         yield tourModel_1.default.deleteMany();
+        yield userModel_1.default.deleteMany();
+        yield reviewModel_1.default.deleteMany();
         console.log("Data Deleted Successfully");
         process.exit();
     }

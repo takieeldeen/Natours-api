@@ -1,4 +1,5 @@
 import { model, Schema } from "mongoose";
+import Tour from "./tourModel";
 
 export const reviewSchema = new Schema(
   {
@@ -33,6 +34,35 @@ export const reviewSchema = new Schema(
     toObject: { virtuals: true },
   }
 );
+// Unique Compound Index to clear
+
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
+reviewSchema.statics.calculateAverageRatings = async function (tourId: string) {
+  const stats = await this.aggregate([
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: "$tour",
+        nRatings: { $sum: 1 },
+        avgRating: { $avg: "$rating" },
+      },
+    },
+  ]);
+  if (stats?.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: stats?.[0]?.avgRating,
+      ratingsQuantity: stats?.[0]?.nRatings,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: 4.5,
+      ratingsQuantity: 0,
+    });
+  }
+};
 
 // Populating paths
 reviewSchema.pre(/^find/, function (next) {
@@ -44,6 +74,16 @@ reviewSchema.pre(/^find/, function (next) {
   //   path: "user",
   // });
   next();
+});
+
+// Calculating Average Rating on Adding New Review
+reviewSchema.post("save", function () {
+  (this.constructor as any).calculateAverageRatings(this.tour);
+});
+// Calculating Average Rating on Deleting and Updating Existing Review
+reviewSchema.post(/^findOneAnd/, function (review) {
+  console.log(`current Review ${review?.tour}`);
+  (this?.model as any).calculateAverageRatings(review?.tour);
 });
 
 const Review = model("Review", reviewSchema);

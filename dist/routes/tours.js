@@ -34,28 +34,28 @@ const tourRouter = express_1.default.Router();
 // Param Middleware that runs only when id param exists
 // tourRouter.param('id', tourController.checkTourId);
 tourRouter.route("/stats").get(tourController.getTourStats);
-tourRouter.route("/monthlyPlans/:year").get(tourController.getMonthlyPlan);
+tourRouter
+    .route("/monthlyPlans/:year")
+    .get(auth_1.authController.protectRoute, auth_1.authController.restrictTo("admin", "lead-guide", "guide"), tourController.getMonthlyPlan);
 tourRouter
     .route("/top-5-cheap")
     .get(tourController.topCheap, tourController.getAllTours);
 tourRouter
     .route("/")
-    .get(auth_1.authController.protectRoute, tourController.getAllTours)
-    .post(tourController.createTour);
+    .get(tourController.getAllTours)
+    .post(auth_1.authController.protectRoute, auth_1.authController.restrictTo("admin", "lead-guide"), tourController.createTour);
 // .post(tourController.checkTourBody, tourController.createTour);
 tourRouter
     .route("/:id")
     .get(tourController.getTour)
-    .patch(tourController.updateTour)
-    .delete(auth_1.authController.protectRoute, auth_1.authController.restrictTo("admin"), tourController.deleteTour);
+    .patch(auth_1.authController.protectRoute, auth_1.authController.restrictTo("admin", "lead-guide"), tourController.updateTour)
+    .delete(auth_1.authController.protectRoute, auth_1.authController.restrictTo("admin", "lead-guide"), tourController.deleteTour);
+tourRouter
+    .route("/tours-within/:distance/center/:latlng/unit/:unit")
+    .get(tourController.getToursWithin);
+tourRouter
+    .route("/distances/:latlng/unit/:unit")
+    .get(tourController.getToursDistances);
 tourRouter.use("/:id/reviews", reviews_1.default);
-// tourRouter
-//   .route("/:tourId/reviews")
-//   .post(
-//     authController.protectRoute,
-//     authController.restrictTo("user"),
-//     reviewController.createReview
-//   )
-//   .get(reviewController.getTourReviews);
 exports.default = tourRouter;
 //# sourceMappingURL=tours.js.map

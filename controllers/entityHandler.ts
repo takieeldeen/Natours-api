@@ -97,6 +97,7 @@ export default class EntityHandler<T> {
         .sort()
         .select()
         .paginate().query;
+      // const docs = await docsQuery.explain();
       const docs = await docsQuery;
       // return the results
       res.status(200).json({

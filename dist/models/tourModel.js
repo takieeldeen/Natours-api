@@ -99,7 +99,7 @@ exports.tourSchema = new mongoose_1.default.Schema({
             default: "Point",
             enum: ["Point"],
         },
-        Coordinates: {
+        coordinates: {
             type: [Number],
         },
         description: String,
@@ -112,7 +112,7 @@ exports.tourSchema = new mongoose_1.default.Schema({
                 default: "Point",
                 enum: ["Point"],
             },
-            Coordinates: [Number],
+            coordinates: [Number],
             description: String,
             day: Number,
         },
@@ -133,6 +133,10 @@ exports.tourSchema.virtual("reviews", {
     foreignField: "tour",
     localField: "_id",
 });
+exports.tourSchema.index({ price: 1, ratingsAverage: -1 });
+exports.tourSchema.index({ slug: 1 });
+exports.tourSchema.index({ startLocation: "2dsphere" });
+// console.log
 // Documents Middleware
 // Embedding Documents ///////////////////////////
 // tourSchema.pre("save", async function (next) {

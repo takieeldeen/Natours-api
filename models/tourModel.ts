@@ -86,7 +86,7 @@ export const tourSchema = new mongoose.Schema(
         default: "Point",
         enum: ["Point"],
       },
-      Coordinates: {
+      coordinates: {
         type: [Number],
       },
       description: String,
@@ -99,7 +99,7 @@ export const tourSchema = new mongoose.Schema(
           default: "Point",
           enum: ["Point"],
         },
-        Coordinates: [Number],
+        coordinates: [Number],
         description: String,
         day: Number,
       },
@@ -132,13 +132,13 @@ export type TourType = {
   startDates: Date[];
   startLocation: {
     type: "Point";
-    Coordinates: number[];
+    coordinates: number[];
     description: string;
     address: string;
   };
   locations: {
     type: "Point";
-    Coordinates: number[];
+    coordinates: number[];
     description: string;
     day: number;
   };
@@ -154,6 +154,10 @@ tourSchema.virtual("reviews", {
   localField: "_id",
 });
 
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: "2dsphere" });
+// console.log
 // Documents Middleware
 // Embedding Documents ///////////////////////////
 // tourSchema.pre("save", async function (next) {

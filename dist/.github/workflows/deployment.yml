@@ -1,0 +1,55 @@
+name: Deploy to Dev Space
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+jobs:
+  test-the-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get The Repo Code
+        uses: actions/checkout@v4
+
+      - name: Install The Dependencies
+        uses: ./.github/actions/install_dependencies
+        with:
+          caching: "false"
+
+      - name: Test The Server
+        run: npm run test
+
+  deploy-the-server:
+    runs-on: ubuntu-latest
+    needs: test-the-server
+    steps:
+      - name: Get The Repo Code
+        uses: actions/checkout@v4
+
+      - name: Install The Dependencies
+        uses: ./.github/actions/install_dependencies
+        id: dependency-installation
+        with:
+          caching: "false"
+
+      - name: Output Caching State
+        run: echo "The Used Caching State is ${{steps.dependency-installation.outputs.used-cache}}"
+
+      - name: Build The Server
+        run: npm run build
+
+      - name: Deploy To Cloud Foundry Dev Deployment
+        uses: "./.github/actions/dev_deployment"
+        with:
+          CF_API_ENDPOINT: https://api.cf.us10-001.hana.ondemand.com/
+          CF_PASSWORD: ${{secrets.CF_PASSWORD}}
+          CF_USERNAME: ${{secrets.CF_USERNAME}}
+# - name: Login To Cloud Foundry
+#   uses: elliottpope/cloudfoundry-cli-action@v6
+#   with:
+#     CF_API: https://api.cf.us10-001.hana.ondemand.com/
+#     USERNAME: ${{secrets.CF_USERNAME}}
+#     PASSWORD: ${{secrets.CF_PASSWORD}}
+#     ORG: dd192eb7trial
+#     SPACE: dev
+#     COMMAND: push NatoursApp

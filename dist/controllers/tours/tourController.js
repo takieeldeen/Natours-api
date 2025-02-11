@@ -35,11 +35,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonthlyPlan = exports.getTourStats = exports.updateTour = exports.deleteTour = exports.getAllTours = exports.getTour = exports.createTour = void 0;
+exports.getToursDistances = exports.getToursWithin = exports.getMonthlyPlan = exports.getTourStats = exports.updateTour = exports.deleteTour = exports.getAllTours = exports.getTour = exports.createTour = void 0;
 exports.topCheap = topCheap;
 const tourModel_1 = __importStar(require("../../models/tourModel"));
 const catchAsync_1 = require("../../utils/catchAsync");
 const entityHandler_1 = __importDefault(require("../entityHandler"));
+const AppError_1 = __importDefault(require("../../utils/AppError"));
 // Old method
 // export async function getAllTours(req: Request, res: Response) {
 //   try {
@@ -231,4 +232,52 @@ exports.getMonthlyPlan = (0, catchAsync_1.catchAsync)(function (req, res) {
         });
     });
 });
+exports.getToursWithin = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { distance, latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(",");
+    if (!lat || !lng)
+        return next(new AppError_1.default("You must defined the center latitude and longitude", 400));
+    const radianDistance = unit === "mi" ? +distance / 3963.2 : +distance / 6378.1;
+    const tours = yield tourModel_1.default.find({
+        startLocation: {
+            $geoWithin: {
+                $centerSphere: [[lng, lat], radianDistance],
+            },
+        },
+    });
+    res.status(200).json({
+        status: 200,
+        results: tours.length,
+        tours,
+    });
+}));
+exports.getToursDistances = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(",");
+    if (!lat || !lng)
+        return next(new AppError_1.default("Please provide the latitude and longitude", 400));
+    const tours = yield tourModel_1.default.aggregate([
+        {
+            $geoNear: {
+                near: {
+                    type: "Point",
+                    coordinates: [+lng, +lat],
+                },
+                distanceField: "distance",
+                distanceMultiplier: unit === "m" ? 1 : 0.000621371,
+            },
+        },
+        {
+            $project: {
+                _id: 1,
+                distance: 1,
+                name: 1,
+            },
+        },
+    ]);
+    res.status(200).json({
+        results: tours.length,
+        tours,
+    });
+}));
 //# sourceMappingURL=tourController.js.map

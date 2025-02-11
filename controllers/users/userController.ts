@@ -3,6 +3,31 @@ import User, { userSchema } from "../../models/userModel";
 import EntityHandler from "../entityHandler";
 import { catchAsync } from "../../utils/catchAsync";
 import { ProtectedRequest } from "../auth/types";
+import multer from "multer";
+import AppError from "../../utils/AppError";
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/img/users");
+  },
+  filename: (req: ProtectedRequest, file, cb) => {
+    const ext = file?.mimetype?.split("/")[1];
+    cb(null, `user-${req?.user?.id}-${Date.now()}.${ext}`);
+  },
+});
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: (req, file, cb) => {
+    if (file?.mimetype?.startsWith("image")) {
+      cb(null, true);
+    } else {
+      cb(new AppError("Only Images are Allowed", 400));
+    }
+  },
+});
+
+export const uploadUserFormData = upload.single("photo");
 
 const userHandler = new EntityHandler(User);
 

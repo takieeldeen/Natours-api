@@ -2,6 +2,8 @@ import Tour, { tourSchema } from "../../models/tourModel";
 import { Request, Response, NextFunction } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import EntityHandler from "../entityHandler";
+import AppError from "../../utils/AppError";
+import { ProtectedRequest } from "../auth/types";
 // Old method
 // export async function getAllTours(req: Request, res: Response) {
 //   try {
@@ -207,3 +209,62 @@ export const getMonthlyPlan = catchAsync(async function (
     plans: monthlyPlans,
   });
 });
+
+export const getToursWithin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { distance, latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(",");
+    if (!lat || !lng)
+      return next(
+        new AppError("You must defined the center latitude and longitude", 400)
+      );
+    const radianDistance =
+      unit === "mi" ? +distance / 3963.2 : +distance / 6378.1;
+    const tours = await Tour.find({
+      startLocation: {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radianDistance],
+        },
+      },
+    });
+    res.status(200).json({
+      status: 200,
+      results: tours.length,
+      tours,
+    });
+  }
+);
+
+export const getToursDistances = catchAsync(
+  async (req: ProtectedRequest, res: Response, next: NextFunction) => {
+    const { latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(",");
+    if (!lat || !lng)
+      return next(
+        new AppError("Please provide the latitude and longitude", 400)
+      );
+    const tours = await Tour.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: "Point",
+            coordinates: [+lng, +lat],
+          },
+          distanceField: "distance",
+          distanceMultiplier: unit === "m" ? 1 : 0.000621371,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          distance: 1,
+          name: 1,
+        },
+      },
+    ]);
+    res.status(200).json({
+      results: tours.length,
+      tours,
+    });
+  }
+);

@@ -39,25 +39,45 @@ const handleJasonWebTokenError = (
   return new AppError(message, 401);
 };
 
-const generateProductionError = (error: AppError, res: Response) => {
-  if (error.isOperational) {
+const generateProductionError = (
+  error: AppError,
+  req: Request,
+  res: Response
+) => {
+  const apiRequest = req.originalUrl.startsWith("/api");
+  if (error.isOperational && apiRequest) {
     res.status(error.statusCode).json({
       status: error.status,
       message: error.message,
     });
-  } else {
-    // We want to know about the error in our server logs
-    console.error(error);
+  } else if (apiRequest && !error.isOperational) {
     // We don't want to leak our Functional Error to the client
     res.status(500).json({
       status: "error",
       message: "Someting Went wrong",
     });
   }
+  res.status(error.isOperational ? error.statusCode : 500).render("error", {
+    status: error.isOperational ? error.status : "error",
+    message: error.isOperational ? error.message : "Something Went Wrong!",
+  });
 };
 
-const generateDevelopmentError = (error: AppError, res: Response) => {
-  res.status(error.statusCode).json({
+const generateDevelopmentError = (
+  error: AppError,
+  req: Request,
+  res: Response
+) => {
+  const apiRequest = req?.originalUrl?.startsWith("/api");
+  if (apiRequest)
+    res.status(error.statusCode).json({
+      isOperational: error.isOperational,
+      status: error.status,
+      message: error.message,
+      stack: error.stack,
+      error,
+    });
+  res.status(error.statusCode).render("error", {
     isOperational: error.isOperational,
     status: error.status,
     message: error.message,
@@ -76,10 +96,11 @@ export default (
   error.status = error.status ?? "error";
   error.isOperational = error.isOperational ?? false;
   if (process.env.NODE_ENV === "development") {
-    generateDevelopmentError(error, res);
+    generateDevelopmentError(error, req, res);
   } else if (process.env.NODE_ENV === "production") {
     let err = Object.create(Object.getPrototypeOf(error));
     Object.assign(err, error);
+    err.message = error.message;
     // Cast Error Handling ////////////////////////
     if (err?.name === "CastError") err = handleDatabaseCastError(err);
     // Unique Constraint Error ////////////////////
@@ -89,8 +110,7 @@ export default (
       err = handleDatabaseValidationError(err);
     if (err?.name === "JsonWebTokenError" || err?.name === "TokenExpiredError")
       err = handleJasonWebTokenError(err);
-
-    generateProductionError(err, res);
+    generateProductionError(err, req, res);
   }
   next();
 };
